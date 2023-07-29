@@ -1,0 +1,2 @@
+[workspace]
+members = ["crates/api", "crates/shuttle-sea-orm", "crates/axum-healthcheck"]
