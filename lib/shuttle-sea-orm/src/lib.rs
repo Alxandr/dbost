@@ -9,6 +9,15 @@ pub struct Database {
 	config: DbInput,
 }
 
+impl Database {
+	/// Use a custom connection string for local runs
+	pub fn local_uri(mut self, local_uri: &str) -> Self {
+		self.config.local_uri = Some(local_uri.to_string());
+
+		self
+	}
+}
+
 #[async_trait]
 impl ResourceBuilder<DatabaseConnection> for Database {
 	/// The type of resource this creates

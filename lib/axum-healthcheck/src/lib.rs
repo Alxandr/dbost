@@ -46,8 +46,11 @@ impl<'a> HealthCheck<'a> {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub enum HealthStatusSeverity {
+	#[serde(rename = "healthy")]
 	Healthy,
+	#[serde(rename = "degraded")]
 	Degraded,
+	#[serde(rename = "unhealthy")]
 	Unhealthy,
 }
 
