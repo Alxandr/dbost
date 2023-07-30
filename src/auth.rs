@@ -1,14 +1,14 @@
 use axum::{
+	body::BoxBody,
 	http::{Request, StatusCode},
 	response::{IntoResponse, Response},
 };
-use futures::future::Either;
 use std::{
-	future::{ready, Future, Ready},
+	future::{ready, Ready},
 	sync::Arc,
-	task::{Context, Poll},
 };
-use tower::{Layer, Service};
+use tower::Layer;
+use tower_http::auth::{AsyncAuthorizeRequest, AsyncRequireAuthorization};
 
 #[derive(Clone)]
 pub struct AuthorizationLayer {
@@ -24,43 +24,40 @@ impl AuthorizationLayer {
 }
 
 impl<S> Layer<S> for AuthorizationLayer {
-	type Service = AuthorizationService<S>;
+	type Service = AsyncRequireAuthorization<S, AuthorizationHandler>;
 
 	fn layer(&self, inner: S) -> Self::Service {
-		AuthorizationService {
-			api_key: self.api_key.clone(),
+		AsyncRequireAuthorization::new(
 			inner,
-		}
+			AuthorizationHandler {
+				api_key: self.api_key.clone(),
+			},
+		)
 	}
 }
 
 #[derive(Clone)]
-pub struct AuthorizationService<S> {
+pub struct AuthorizationHandler {
 	api_key: Arc<str>,
-	inner: S,
 }
 
-impl<S, B> Service<Request<B>> for AuthorizationService<S>
-where
-	S: Service<Request<B>, Response = Response>,
-{
-	type Response = S::Response;
-	type Error = S::Error;
-	type Future = Either<S::Future, Ready<<S::Future as Future>::Output>>;
+impl<B> AsyncAuthorizeRequest<B> for AuthorizationHandler {
+	type RequestBody = B;
+	type ResponseBody = BoxBody;
+	type Future = Ready<Result<Request<B>, Response<Self::ResponseBody>>>;
 
-	fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-		self.inner.poll_ready(cx)
-	}
-
-	fn call(&mut self, req: Request<B>) -> Self::Future {
-		let api_key = req.headers().get("x-api-key").and_then(|h| h.to_str().ok());
+	fn authorize(&mut self, request: Request<B>) -> Self::Future {
+		let api_key = request
+			.headers()
+			.get("x-api-key")
+			.and_then(|h| h.to_str().ok());
 
 		let authorized = api_key == Some(&*self.api_key);
 		if authorized {
-			Either::Left(self.inner.call(req))
+			ready(Ok(request))
 		} else {
 			let response = (StatusCode::UNAUTHORIZED, "Unauthorized").into_response();
-			Either::Right(ready(Ok(response)))
+			ready(Err(response))
 		}
 	}
 }

@@ -34,7 +34,12 @@ theme-db-migration = { version = "0.0.0", path = "./db/migrations" }
 thiserror = "1.0.44"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 tower = { version = "0.4.13", default-features = false }
-tower-http = { version = "0.4.3", features = ["trace", "async-compression", "compression-gzip", "compression-zstd"] }
+tower-http = { version = "0.4.3", features = [
+	"trace",
+	"async-compression",
+	"compression-full",
+	"auth",
+] }
 tracing = "0.1.37"
 tvdb-client = { version = "0.0.0", path = "./lib/tvdb-client" }
 uuid = { version = "1.4.1", features = ["serde"] }
