@@ -26,13 +26,14 @@ struct SeasonDto {
 	// id: u64,
 	#[serde(default = "Default::default")]
 	name: Option<String>,
+	#[serde(default = "Default::default")]
 	translations: TranslationsDto,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 struct TranslationsDto {
-	#[serde(rename = "nameTranslations")]
-	name_translations: Vec<TranslationDto>,
+	#[serde(rename = "nameTranslations", default = "Default::default")]
+	name_translations: Option<Vec<TranslationDto>>,
 }
 
 #[derive(Deserialize)]
@@ -102,11 +103,19 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		.if_ok()
 		.await?;
 
-	let season = season_response.json::<ResultDto<SeasonDto>>().await?.data;
+	let season = season_response
+		.json::<ResultDto<SeasonDto>>()
+		.await
+		.map_err(|e| {
+			error!(error = %e, season = id, "failed to parse season response");
+			e
+		})?
+		.data;
 	let name = season
 		.translations
 		.name_translations
 		.into_iter()
+		.flatten()
 		.find_map(|t| {
 			if t.language == "eng" {
 				Some(t.name)
@@ -136,6 +145,7 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 		.translations
 		.name_translations
 		.into_iter()
+		.flatten()
 		.find_map(|t| {
 			if t.language == "eng" {
 				Some(t.name)
