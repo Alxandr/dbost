@@ -4,3 +4,4 @@ pub mod prelude;
 
 pub mod season;
 pub mod series;
+pub mod theme_song;

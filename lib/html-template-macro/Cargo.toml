@@ -1,0 +1,19 @@
+[package]
+name = "html-template-macro"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+proc-macro2 = "1"
+proc-macro2-diagnostics = "0.10"
+quote = "1"
+rstml = { version = "0.11", default-features = false }
+syn = "2"
+
+[dev-dependencies]
+html-template = { path = "../html-template" }

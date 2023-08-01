@@ -1,0 +1,17 @@
+{
+	"name": "theme-db",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "tailwindcss -i ./src/main.css -o ./public/main.css",
+		"watch": "tailwindcss -i ./src/main.css -o ./public/main.css -w"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.9",
+		"daisyui": "^3.5.0",
+		"tailwindcss": "^3.3.3"
+	}
+}

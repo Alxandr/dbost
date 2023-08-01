@@ -4,6 +4,8 @@ members = [
 	"lib/shuttle-sea-orm",
 	"lib/axum-healthcheck",
 	"lib/tvdb-client",
+	"lib/html-template",
+	"lib/html-template-macro",
 	"db/entities",
 	"db/migrations",
 ]
@@ -17,6 +19,7 @@ edition = "2021"
 axum = { version = "0.6.19", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
+html-template = { version = "0.0.0", path = "./lib/html-template" }
 sea-orm = { version = "0.12.1", features = [
 	"sqlx-postgres",
 	"runtime-tokio-native-tls",
@@ -29,6 +32,7 @@ shuttle-axum = "0.21.0"
 shuttle-runtime = "0.21.0"
 shuttle-sea-orm = { version = "0.0.0", path = "./lib/shuttle-sea-orm" }
 shuttle-secrets = "0.21.0"
+shuttle-static-folder = "0.21.0"
 theme-db-entities = { version = "0.0.0", path = "./db/entities" }
 theme-db-migration = { version = "0.0.0", path = "./db/migrations" }
 thiserror = "1.0.44"
@@ -39,6 +43,7 @@ tower-http = { version = "0.4.3", features = [
 	"async-compression",
 	"compression-full",
 	"auth",
+	"fs",
 ] }
 tracing = "0.1.37"
 tvdb-client = { version = "0.0.0", path = "./lib/tvdb-client" }

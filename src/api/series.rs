@@ -189,6 +189,7 @@ async fn insert_seasons_db(
 					number: Set(update.number as i16),
 					tvdb_id: Set(update.id as i32),
 					series_id: Set(series_id),
+					..Default::default()
 				},
 			)
 		})
@@ -223,6 +224,7 @@ async fn insert_series_db(
 		id: Set(Uuid::new_v4()),
 		name: Set(update.name),
 		tvdb_id: Set(update.id as i32),
+		..Default::default()
 	};
 
 	let series = series.insert(tx).await.log_err(|e| {

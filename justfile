@@ -3,11 +3,19 @@
 	just --list
 
 # start dev server
-run:
+run: build-css
 	cargo shuttle run
 
+# build for production
+build: build-css
+	cargo build --release
+
+# build css
+build-css:
+	pnpm run build
+
 # deploy to shuttle
-deploy:
+deploy: build
 	cargo shuttle deploy
 
 [private]
@@ -18,5 +26,5 @@ generate-entities:
 	sea-orm-cli generate entity -o db/entities/src -l
 
 # run migrations
-migrate cmd:
+migrate +cmd:
 	sea-orm-cli migrate -d db/migrations {{cmd}}

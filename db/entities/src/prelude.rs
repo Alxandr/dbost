@@ -2,3 +2,4 @@
 
 pub use super::season::Entity as Season;
 pub use super::series::Entity as Series;
+pub use super::theme_song::Entity as ThemeSong;

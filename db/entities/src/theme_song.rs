@@ -3,27 +3,22 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "series")]
+#[sea_orm(table_name = "theme_song")]
 pub struct Model {
 	#[sea_orm(primary_key, auto_increment = false)]
 	pub id: Uuid,
 	pub name: String,
-	pub tvdb_id: i32,
-	pub theme_song_id: Option<Uuid>,
+	pub youtube_id: Option<String>,
+	pub youtube_starts_at: Option<i32>,
+	pub youtube_ends_at: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
 	#[sea_orm(has_many = "super::season::Entity")]
 	Season,
-	#[sea_orm(
-		belongs_to = "super::theme_song::Entity",
-		from = "Column::ThemeSongId",
-		to = "super::theme_song::Column::Id",
-		on_update = "Cascade",
-		on_delete = "SetNull"
-	)]
-	ThemeSong,
+	#[sea_orm(has_many = "super::series::Entity")]
+	Series,
 }
 
 impl Related<super::season::Entity> for Entity {
@@ -32,9 +27,9 @@ impl Related<super::season::Entity> for Entity {
 	}
 }
 
-impl Related<super::theme_song::Entity> for Entity {
+impl Related<super::series::Entity> for Entity {
 	fn to() -> RelationDef {
-		Relation::ThemeSong.def()
+		Relation::Series.def()
 	}
 }
 

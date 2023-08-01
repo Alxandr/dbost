@@ -11,6 +11,7 @@ pub struct Model {
 	pub number: i16,
 	pub name: Option<String>,
 	pub tvdb_id: i32,
+	pub theme_song_id: Option<Uuid>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -23,11 +24,25 @@ pub enum Relation {
 		on_delete = "Cascade"
 	)]
 	Series,
+	#[sea_orm(
+		belongs_to = "super::theme_song::Entity",
+		from = "Column::ThemeSongId",
+		to = "super::theme_song::Column::Id",
+		on_update = "Cascade",
+		on_delete = "SetNull"
+	)]
+	ThemeSong,
 }
 
 impl Related<super::series::Entity> for Entity {
 	fn to() -> RelationDef {
 		Relation::Series.def()
+	}
+}
+
+impl Related<super::theme_song::Entity> for Entity {
+	fn to() -> RelationDef {
+		Relation::ThemeSong.def()
 	}
 }
 
