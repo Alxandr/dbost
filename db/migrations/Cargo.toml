@@ -9,9 +9,12 @@ name = "migration"
 path = "src/lib.rs"
 
 [dependencies]
+uuid = "1.4.1"
+csv = "1.2.2"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 sea-orm-migration = { version = "0.12.1", features = [
 	"sqlx-postgres",
 	"runtime-tokio-native-tls",
 	"with-uuid",
 ] }
+theme-db-entities = { version = "0.0.0", path = "../entities" }

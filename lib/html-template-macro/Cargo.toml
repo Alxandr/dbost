@@ -9,6 +9,8 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+convert_case = "0.6.0"
+indexmap = "2.0.0"
 proc-macro2 = "1"
 proc-macro2-diagnostics = "0.10"
 quote = "1"
@@ -16,4 +18,6 @@ rstml = { version = "0.11", default-features = false }
 syn = "2"
 
 [dev-dependencies]
+bytes = "1.4.0"
 html-template = { path = "../html-template" }
+trybuild = "1.0"

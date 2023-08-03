@@ -11,14 +11,15 @@ use axum::{
 };
 use futures::FutureExt;
 use sea_orm::{
-	ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter, TransactionError,
-	TransactionTrait, TryIntoModel,
+	ActiveModelTrait, ColumnTrait, DatabaseConnection, DatabaseTransaction, EntityTrait, QueryFilter,
+	TransactionError, TransactionTrait, TryIntoModel,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, error};
 use theme_db_entities::{prelude::*, season, series};
 use thiserror::Error;
 use tracing::error;
+use tvdb_client::TvDbClient;
 use uuid::Uuid;
 
 trait ResultExt<T, E> {
@@ -58,7 +59,7 @@ where
 }
 
 #[derive(Error, Debug)]
-enum SeriesError {
+pub(crate) enum SeriesError {
 	#[error("Series not found")]
 	NotFound,
 
@@ -121,6 +122,44 @@ async fn get_series(Path(id): Path<Uuid>, Db(db): Db) -> Result<impl IntoRespons
 struct GetSeriesQuery {
 	#[serde(default = "Default::default")]
 	update: bool,
+}
+
+// #[instrument(skip(db, tvdb))]
+pub(crate) async fn seed_tbdb_id(
+	id: u32,
+	tx: &DatabaseTransaction,
+	tvdb: &TvDbClient,
+) -> Result<(), SeriesError> {
+	let update = tvdb
+		.get_series(id as u64)
+		.await
+		.log_err(|e| {
+			error!("Error fetching series from TVDB: {}", e);
+		})?
+		.ok_or(SeriesError::NotFound)?;
+
+	let series = Series::find()
+		.filter(series::Column::TvdbId.eq(id as i32))
+		.one(tx)
+		.await
+		.log_err(|e| {
+			error!("Error finding series: {}", e);
+		})?;
+
+	let seasons = match series.as_ref() {
+		None => Vec::new(),
+		Some(e) => Season::find()
+			.filter(season::Column::SeriesId.eq(e.id))
+			.all(tx)
+			.await
+			.log_err(|e| {
+				error!("Error finding seasons: {}", e);
+			})?,
+	};
+
+	insert_or_update_series_db(tx, update, series, seasons).await?;
+
+	Ok(())
 }
 
 async fn get_series_by_tvdb_id(

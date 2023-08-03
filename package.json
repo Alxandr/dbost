@@ -3,15 +3,19 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"build": "tailwindcss -i ./src/main.css -o ./public/main.css",
-		"watch": "tailwindcss -i ./src/main.css -o ./public/main.css -w"
+		"build": "postcss ./src/main.css -o ./public/main.css",
+		"watch": "postcss ./src/main.css -o ./public/main.css -w"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@tailwindcss/typography": "^0.5.9",
+		"autoprefixer": "^10.4.14",
+		"cssnano": "^6.0.1",
 		"daisyui": "^3.5.0",
+		"postcss": "^8.4.27",
+		"postcss-cli": "^10.1.0",
 		"tailwindcss": "^3.3.3"
 	}
 }
