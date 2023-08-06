@@ -311,15 +311,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
-name = "basic-toml"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bfc506e7a2370ec239e1d072507b2a80c833083699d3c6fa176fbb4de8448c6"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "bigdecimal"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1124,34 +1115,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5444c27eef6923071f7ebcc33e3444508466a76f7a2b93da00ed6e19f30c1ddb"
 dependencies = [
  "windows-sys",
-]
-
-[[package]]
-name = "html-template"
-version = "0.0.0"
-dependencies = [
- "axum",
- "bytes",
- "futures",
- "html-template-macro",
- "http-body",
- "pin-project",
-]
-
-[[package]]
-name = "html-template-macro"
-version = "0.0.0"
-dependencies = [
- "bytes",
- "convert_case",
- "html-template",
- "indexmap 2.0.0",
- "proc-macro2",
- "proc-macro2-diagnostics",
- "quote",
- "rstml",
- "syn 2.0.28",
- "trybuild",
 ]
 
 [[package]]
@@ -2309,6 +2272,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "rstml-component"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1722819020fa635962b7c599108c8efcc5b17433fb11f01995b1c28f812f17aa"
+dependencies = [
+ "bytes",
+ "rstml-component-macro",
+]
+
+[[package]]
+name = "rstml-component-axum"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b0b1193b1c48b9a2191b6d382b9c716dd78bfd865c773d6582c81fd873d586a"
+dependencies = [
+ "axum",
+ "rstml-component",
+]
+
+[[package]]
+name = "rstml-component-macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "629f16315764ed7271479bce163b58db0e167f9089497140946336b5d298c93f"
+dependencies = [
+ "convert_case",
+ "indexmap 2.0.0",
+ "proc-macro2",
+ "proc-macro2-diagnostics",
+ "quote",
+ "rstml",
+ "syn 2.0.28",
+]
+
+[[package]]
 name = "rust_decimal"
 version = "1.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3265,22 +3263,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "termcolor"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
-dependencies = [
- "winapi-util",
-]
-
-[[package]]
 name = "theme-db"
 version = "0.0.0"
 dependencies = [
  "axum",
  "axum-healthcheck",
  "futures",
- "html-template",
+ "rstml-component",
+ "rstml-component-axum",
  "sea-orm",
  "serde",
  "shuttle-axum",
@@ -3659,21 +3649,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 
 [[package]]
-name = "trybuild"
-version = "1.0.82"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a84e0202ea606ba5ebee8507ab2bfbe89b98551ed9b8f0be198109275cff284b"
-dependencies = [
- "basic-toml",
- "glob",
- "once_cell",
- "serde",
- "serde_derive",
- "serde_json",
- "termcolor",
-]
-
-[[package]]
 name = "ttl_cache"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3914,15 +3889,6 @@ name = "winapi-i686-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
-
-[[package]]
-name = "winapi-util"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70ec6ce85bb158151cae5e5c87f95a8e97d2c0c4b001223f33a334e3ce5de178"
-dependencies = [
- "winapi",
-]
 
 [[package]]
 name = "winapi-x86_64-pc-windows-gnu"
