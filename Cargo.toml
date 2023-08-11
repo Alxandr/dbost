@@ -35,7 +35,7 @@ sea-orm = { version = "0.12.1", features = [
 	"debug-print",
 ] }
 serde = { version = "1.0.178", features = ["derive"] }
-shuttle-axum = "0.21.0"
+shuttle-axum = "0.23.0"
 shuttle-runtime = "0.21.0"
 shuttle-sea-orm = { version = "0.0.0", path = "./lib/shuttle-sea-orm" }
 shuttle-secrets = "0.21.0"
