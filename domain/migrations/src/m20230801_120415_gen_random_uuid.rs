@@ -1,4 +1,4 @@
-use sea_orm_migration::prelude::*;
+use crate::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -42,22 +42,4 @@ impl MigrationTrait for Migration {
 		// issues.
 		Ok(())
 	}
-}
-
-#[derive(Iden)]
-enum ThemeSong {
-	Table,
-	Id,
-}
-
-#[derive(Iden)]
-enum Series {
-	Table,
-	Id,
-}
-
-#[derive(Iden)]
-enum Season {
-	Table,
-	Id,
 }

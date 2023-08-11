@@ -4,4 +4,7 @@ pub mod prelude;
 
 pub mod season;
 pub mod series;
+pub mod session;
 pub mod theme_song;
+pub mod user;
+pub mod user_link;

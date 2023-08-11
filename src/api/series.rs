@@ -9,14 +9,14 @@ use axum::{
 	routing::get,
 	Json, Router,
 };
+use dbost_entities::{prelude::*, season, series};
 use futures::FutureExt;
 use sea_orm::{
-	ActiveModelTrait, ColumnTrait, DatabaseConnection, DatabaseTransaction, EntityTrait, QueryFilter,
-	TransactionError, TransactionTrait, TryIntoModel,
+	ActiveModelTrait, ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter, TransactionError,
+	TransactionTrait, TryIntoModel,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, error};
-use theme_db_entities::{prelude::*, season, series};
 use thiserror::Error;
 use tracing::error;
 use tvdb_client::TvDbClient;
@@ -328,7 +328,9 @@ async fn update_series_db(
 		}
 	}
 
-	seasons.extend(insert_seasons_db(tx, series.id, updates.into_values()).await?);
+	if !updates.is_empty() {
+		seasons.extend(insert_seasons_db(tx, series.id, updates.into_values()).await?);
+	}
 
 	if !to_delete.is_empty() {
 		Season::delete_many()

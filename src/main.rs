@@ -1,13 +1,19 @@
 use auth::AuthorizationLayer;
 use axum::{extract::State, response::IntoResponse, routing::get, Router};
 use axum_healthcheck::{HealthCheck, ResultHealthStatusExt};
+use dbost_entities::session;
+use dbost_session::{CookieConfig, SessionLayer};
+use dbost_utils::OffsetDateTimeExt;
 use futures::FutureExt;
 use migration::MigratorTrait;
-use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
+use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, TransactionTrait};
 use shuttle_secrets::SecretStore;
 use std::{convert::Infallible, env, path::PathBuf, sync::Arc};
+use time::OffsetDateTime;
+use tokio::signal::unix::{signal, SignalKind};
+use tokio_util::sync::CancellationToken;
 use tower_http::{compression::CompressionLayer, services::ServeDir, trace::TraceLayer};
-use tracing::{info, info_span, Instrument};
+use tracing::{debug, info, info_span, warn, Instrument};
 use tvdb_client::TvDbClient;
 
 mod api;
@@ -42,6 +48,9 @@ async fn axum(
 	secret_store: SecretStore,
 	db: DatabaseConnection,
 ) -> shuttle_axum::ShuttleAxum {
+	let session_key = secret_store
+		.get("SESSION_KEY")
+		.expect("SESSION_KEY not found");
 	let api_key = secret_store.get("API_KEY").expect("API_KEY not found");
 	let tvdb_api_key = secret_store
 		.get("TVDB_API_KEY")
@@ -65,13 +74,59 @@ async fn axum(
 
 	let state = AppState { db, tvdb };
 
+	let ctrl_c = signal(SignalKind::terminate()).expect("register for ctrl+c failed");
+	let ct = CancellationToken::new();
+	tokio::spawn({
+		let ct = ct.clone();
+		async move {
+			let mut ctrl_c = ctrl_c;
+			ctrl_c.recv().await;
+			ct.cancel();
+		}
+	});
+
+	tokio::spawn({
+		let db = state.db.clone();
+		let ct = ct.clone();
+		async move {
+			while !ct.is_cancelled() {
+				// cleanup expired sessions
+				let result = session::Entity::delete_many()
+					.filter(session::Column::Etime.lt(OffsetDateTime::now_utc().into_primitive_utc()))
+					.exec(&db)
+					.await;
+
+				match result {
+					Ok(v) => debug!(
+						"deleted {count} expired session rows",
+						count = v.rows_affected
+					),
+					Err(e) => warn!("failed to delete expires sessions: {e:#?}"),
+				}
+
+				tokio::select! {
+					_ = tokio::time::sleep(tokio::time::Duration::from_secs(60 * 60 /* 1 hour */)) => {},
+					_ = ct.cancelled() => { break; },
+				}
+			}
+		}
+	});
+
 	let router = Router::new()
 		.route("/healthz", get(health_check))
 		.nest(
 			"/api",
 			api::router().layer(AuthorizationLayer::new(api_key)),
 		)
-		.merge(web::router())
+		.merge(web::router().layer(SessionLayer::new(
+			&session_key,
+			CookieConfig {
+				secure: false, // should be true when in production,
+				domain: None,
+				path: None,
+			},
+			state.db.clone(),
+		)))
 		.with_state(state)
 		.nest_service("/public", ServeDir::new(public_folder))
 		.layer(CompressionLayer::new())

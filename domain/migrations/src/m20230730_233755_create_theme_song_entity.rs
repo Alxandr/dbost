@@ -1,4 +1,4 @@
-use sea_orm_migration::prelude::*;
+use crate::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -134,29 +134,4 @@ impl From<ForeignKeys> for String {
 			ForeignKeys::SeasonThemeSongId => "fk-season_themesong".to_owned(),
 		}
 	}
-}
-
-#[derive(Iden)]
-enum ThemeSong {
-	Table,
-	Id,
-	Name,
-	#[iden = "youtube_id"]
-	YouTubeId,
-	#[iden = "youtube_starts_at"]
-	YouTubeStartsAt,
-	#[iden = "youtube_ends_at"]
-	YouTubeEndsAt,
-}
-
-#[derive(Iden)]
-enum Series {
-	Table,
-	ThemeSongId,
-}
-
-#[derive(Iden)]
-enum Season {
-	Table,
-	ThemeSongId,
 }

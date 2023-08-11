@@ -1,16 +1,7 @@
-use sea_orm_migration::{prelude::*, sea_orm::ExecResult};
+use crate::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
-
-async fn log_and_exec<'a, 'b>(
-	manager: &'a SchemaManager<'b>,
-	sql: impl Into<String>,
-) -> Result<ExecResult, DbErr> {
-	let sql = sql.into();
-	println!("Executing SQL: {}", sql);
-	manager.get_connection().execute_unprepared(&sql).await
-}
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
@@ -36,6 +27,8 @@ impl MigrationTrait for Migration {
 			.drop_index(Index::drop().name(Indices::SeriesNameTrigram).to_owned())
 			.await?;
 
+		log_and_exec(manager, "DROP EXTENSION IF EXISTS pg_trgm;").await?;
+
 		Ok(())
 	}
 }
@@ -50,10 +43,4 @@ impl From<Indices> for String {
 	fn from(index: Indices) -> Self {
 		index.to_string()
 	}
-}
-
-#[derive(Iden)]
-enum Series {
-	Table,
-	Name,
 }

@@ -1,10 +1,13 @@
+entities-proj   := "domain/entities"
+migrations-proj := "domain/migrations"
+
 [private]
 @list:
 	just --list
 
 # start dev server
 run: build-css
-	cargo shuttle run
+	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG" cargo shuttle run
 
 # build for production
 build: build-css
@@ -23,8 +26,8 @@ alias start := run
 
 # generate entities from database schema
 generate-entities:
-	sea-orm-cli generate entity -o db/entities/src -l
+	sea-orm-cli generate entity -o {{entities-proj}}/src -l --expanded-format --date-time-crate time
 
 # run migrations
 migrate +cmd:
-	sea-orm-cli migrate -d db/migrations {{cmd}}
+	sea-orm-cli migrate -d {{migrations-proj}} {{cmd}}

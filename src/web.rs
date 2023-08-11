@@ -1,10 +1,10 @@
 use crate::{extractors::Db, AppState};
 use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use dbost_entities::{prelude::*, series};
 use rstml_component::{write_html, For, HtmlComponent, HtmlContent, HtmlFormatter};
 use rstml_component_axum::Html;
 use sea_orm::{EntityTrait, TransactionError};
 use std::{error, fmt};
-use theme_db_entities::{prelude::*, series};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -111,22 +111,36 @@ where
 	}
 }
 
+#[derive(HtmlComponent)]
+struct SeriesCard {
+	series: series::Model,
+}
+
+impl HtmlContent for SeriesCard {
+	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
+		write_html!(formatter,
+			<div id=self.series.id.to_string() class="shadow-xl card w-96 bg-base-100">
+				<div class="card-body">
+					<h2 class="card-title">{self.series.name}</h2>
+					<p>{self.series.id.to_string()}</p>
+				</div>
+			</div>
+		)
+	}
+}
+
 async fn index(Db(db): Db) -> Result<impl IntoResponse, WebError> {
 	let series = Series::find().all(&db).await?;
 
 	let html = Html::from_fn(|f| {
 		write_html!(f,
 			<Template title="Series">
-				<h1>Series</h1>
-				<ul>
+				<h1 class="text-4xl font-bold">Series</h1>
+				// <ul>
 					<For items={series}>
-						{ |f, s| write_html!(f,
-							<li>
-								<a href=format!("/series/{}", s.id)>{s.name}</a>
-							</li>
-						) }
+						{ |f, s| SeriesCard { series: s }.fmt(f) }
 					</For>
-				</ul>
+				// </ul>
 			</Template>
 		)
 	});

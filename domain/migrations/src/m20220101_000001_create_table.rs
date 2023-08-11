@@ -1,4 +1,4 @@
-use sea_orm_migration::prelude::*;
+use crate::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -153,24 +153,4 @@ impl From<ForeignKeys> for String {
 			ForeignKeys::SeasonSeriesId => "fk-season_seriesid".to_owned(),
 		}
 	}
-}
-
-#[derive(Iden)]
-enum Series {
-	Table,
-	Id,
-	Name,
-	#[iden = "tvdb_id"]
-	TvDbId,
-}
-
-#[derive(Iden)]
-enum Season {
-	Table,
-	Id,
-	Name,
-	SeriesId,
-	Number,
-	#[iden = "tvdb_id"]
-	TvDbId,
 }
