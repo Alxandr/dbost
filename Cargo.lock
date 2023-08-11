@@ -2930,6 +2930,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "shuttle-common"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e91c5d6f358588f97cb5d3869ceaad975eaa88ca1f963e684e72cc9a264bb62"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "once_cell",
+ "rustrict",
+ "serde",
+ "serde_json",
+ "strum 0.24.1",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "shuttle-proto"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2940,7 +2957,7 @@ dependencies = [
  "home",
  "prost",
  "prost-types",
- "shuttle-common",
+ "shuttle-common 0.21.0",
  "tokio",
  "tonic",
  "tower",
@@ -2960,9 +2977,9 @@ dependencies = [
  "serde",
  "serde_json",
  "shuttle-codegen",
- "shuttle-common",
+ "shuttle-common 0.21.0",
  "shuttle-proto",
- "shuttle-service",
+ "shuttle-service 0.21.0",
  "strfmt",
  "thiserror",
  "tokio",
@@ -2980,19 +2997,19 @@ dependencies = [
  "async-trait",
  "sea-orm",
  "serde",
- "shuttle-service",
+ "shuttle-service 0.21.0",
  "sqlx",
 ]
 
 [[package]]
 name = "shuttle-secrets"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6c777ea86566812a0de4d54eee1e50f8592dd7a59a79de4006d09c40a63aa72"
+checksum = "d9444a9e71281fefc3712d269e0d863931cac6c52fb015d4164a13c56ca84c9d"
 dependencies = [
  "async-trait",
  "serde",
- "shuttle-service",
+ "shuttle-service 0.23.0",
 ]
 
 [[package]]
@@ -3004,7 +3021,21 @@ dependencies = [
  "anyhow",
  "async-trait",
  "serde",
- "shuttle-common",
+ "shuttle-common 0.21.0",
+ "strfmt",
+ "thiserror",
+]
+
+[[package]]
+name = "shuttle-service"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0365223a805fa37f43edf34dd6ed759d8381805cfcfd10a154405fd00711c48"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "serde",
+ "shuttle-common 0.23.0",
  "strfmt",
  "thiserror",
 ]
@@ -3019,7 +3050,7 @@ dependencies = [
  "dunce",
  "fs_extra",
  "serde",
- "shuttle-service",
+ "shuttle-service 0.21.0",
  "tracing",
 ]
 
