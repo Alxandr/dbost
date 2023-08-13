@@ -28,6 +28,9 @@ deploy: build
 [private]
 alias start := run
 
+[private]
+alias publish := deploy
+
 # generate entities from database schema
 generate-entities:
 	sea-orm-cli generate entity -o {{entities-proj}}/src -l --expanded-format --date-time-crate time

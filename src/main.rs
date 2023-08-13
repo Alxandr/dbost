@@ -105,9 +105,6 @@ async fn axum(
 		.parse::<bool>()
 		.expect("SECURE_COOKIES must be a boolean");
 
-	// GITHUB_CLIENT_ID = "fd80aa6843145caf7f13"
-	// GITHUB_CLIENT_SECRET = "2dc2f959658f8d847d13a168b5bc81bb9984a72c"
-
 	migration::Migrator::up(&db, None)
 		.await
 		.expect("Failed to run migrations");
