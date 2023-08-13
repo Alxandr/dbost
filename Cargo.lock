@@ -871,12 +871,14 @@ dependencies = [
  "dbost-utils",
  "futures",
  "futures-util",
+ "indexmap 2.0.0",
  "md5",
  "rstml-component",
  "rstml-component-axum",
  "sea-orm",
  "sea-query",
  "serde",
+ "serde_urlencoded",
  "shuttle-axum",
  "shuttle-runtime",
  "shuttle-sea-orm",
@@ -2880,9 +2882,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1722819020fa635962b7c599108c8efcc5b17433fb11f01995b1c28f812f17aa"
+checksum = "11f1939b5e1f54103c34a01eeb122d8bd79a8ad7796562c81f41df43c356f83e"
 dependencies = [
  "bytes",
  "rstml-component-macro",
@@ -2890,9 +2892,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component-axum"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b0b1193b1c48b9a2191b6d382b9c716dd78bfd865c773d6582c81fd873d586a"
+checksum = "b6c961897f4c015070e07f311493246a855a4cbb9a123ee9978817c898f87575"
 dependencies = [
  "axum",
  "rstml-component",
@@ -3336,9 +3338,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-axum"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ba4f7504be3120326c171b12691c47701aab6c952ee7db24bd672b200759f64"
+checksum = "a23b959b29c95809b4d7394081aaacbebad0926210f8306c499189a1e982107d"
 dependencies = [
  "axum",
  "shuttle-runtime",
@@ -3346,9 +3348,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-codegen"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f707f39740ae102e85f9a7b32bfe71f7702d9b4050781a523a58a762c11a960"
+checksum = "0e44dab12fe6c4ca6f7f5808c5c6bf52c1a5c07dfc54de61b0336c616c7f6a2d"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -3358,9 +3360,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-common"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b29e408d7654c735ede8554fdda69c516c8f04af43297e5cf50b831d8a0d7dce"
+checksum = "3e91c5d6f358588f97cb5d3869ceaad975eaa88ca1f963e684e72cc9a264bb62"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3396,15 +3398,16 @@ dependencies = [
 
 [[package]]
 name = "shuttle-proto"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36c4b30c2a22c2c0ea63ac2ac54a0898723b8288b4d0029ca0f765d47eff1833"
+checksum = "a4b8ab4e4e8b8a7f299ea6949c60518479ae6a8eeb140545c6b4a0640b6e3668"
 dependencies = [
  "anyhow",
  "chrono",
  "home",
  "prost",
  "prost-types",
+ "serde_json",
  "shuttle-common",
  "tokio",
  "tonic",
@@ -3414,9 +3417,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-runtime"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57639b189b18d3f7e53f9aeaface40daba7fde07fcc8938cc78a3146ce4900a0"
+checksum = "d509359154b305070156c827af30006b4de604f240f63bbe1b0f4fa0d5096437"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3451,9 +3454,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-secrets"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6c777ea86566812a0de4d54eee1e50f8592dd7a59a79de4006d09c40a63aa72"
+checksum = "d9444a9e71281fefc3712d269e0d863931cac6c52fb015d4164a13c56ca84c9d"
 dependencies = [
  "async-trait",
  "serde",
@@ -3462,9 +3465,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-service"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb9157726451489c43ac5d07d0813f3b39863cbcc778615a2f5daa9766a2bb15"
+checksum = "a0365223a805fa37f43edf34dd6ed759d8381805cfcfd10a154405fd00711c48"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3476,9 +3479,9 @@ dependencies = [
 
 [[package]]
 name = "shuttle-static-folder"
-version = "0.21.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ee4441bd2ba9bf6b86e7051b3c11b593aa0d81c1e2fab1be7a8c9e8954eedd4"
+checksum = "45821ec3dd9146afe89ee0b80287eddc00c5f3d813707cfdf79229738aaa904d"
 dependencies = [
  "async-trait",
  "dunce",

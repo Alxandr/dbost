@@ -1,16 +1,24 @@
 mod auth;
 
 use crate::{extractors::Db, AppState};
-use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use axum::{
+	extract::{OriginalUri, Query},
+	http::{StatusCode, Uri},
+	response::IntoResponse,
+	routing::get,
+	Router,
+};
 use dbost_entities::{season, series, user};
 use dbost_session::Session;
+use indexmap::IndexMap;
 use rstml_component::{write_html, For, HtmlComponent, HtmlContent, HtmlFormatter};
 use rstml_component_axum::Html;
 use sea_orm::{
-	ColumnTrait, EntityTrait, FromQueryResult, QueryOrder, QuerySelect, RelationTrait,
-	TransactionError,
+	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryOrder, QuerySelect,
+	RelationTrait, TransactionError,
 };
 use sea_query::JoinType;
+use serde::Deserialize;
 use std::{borrow::Cow, error, fmt};
 use thiserror::Error;
 use tracing::log::warn;
@@ -196,9 +204,9 @@ struct SeriesCard {
 impl HtmlContent for SeriesCard {
 	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
 		write_html!(formatter,
-			<li id=format!("series-card-{}", self.id.to_string()) class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid">
+			<li id=("series-card-", self.id.to_string()) class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid">
 				<figure style="grid-row: 1 / span 2; grid-column: 1 / 1;">
-					<img src=self.image.as_deref() alt=format!("{} image", self.name) />
+					<img src=self.image.as_deref() alt=(&*self.name, " image") />
 				</figure>
 				<div class="p-4 text-base bg-base-100/80" style="grid-row: 2 / span 1; grid-column: 1 / 1;">
 					<h2 class="card-title">{self.name}</h2>
@@ -209,9 +217,101 @@ impl HtmlContent for SeriesCard {
 	}
 }
 
-async fn index(Db(db): Db, session: Session) -> Result<impl IntoResponse, WebError> {
+#[derive(HtmlComponent)]
+struct Pagination {
+	page: u64,
+	pages: u64,
+	url: Uri,
+}
+
+impl HtmlContent for Pagination {
+	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
+		struct PageButton {
+			display: u64,
+			query: String,
+			disabled: bool,
+		}
+
+		impl HtmlContent for PageButton {
+			fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
+				if self.disabled {
+					write_html!(formatter,
+						<a href=("?", self.query) class="join-item btn" disabled>{self.display}</a>
+					)
+				} else {
+					write_html!(formatter,
+						<a href=("?", self.query) class="join-item btn">{self.display}</a>
+					)
+				}
+			}
+		}
+
+		let query: IndexMap<&str, Option<String>> =
+			serde_urlencoded::from_str(self.url.query().unwrap_or_default()).unwrap_or_default();
+
+		let page = move |page: u64| {
+			let mut query = query.clone();
+			query.insert("page", Some(page.to_string()));
+
+			serde_urlencoded::to_string(query).unwrap()
+		};
+
+		let first_page = (self.page > 0).then(|| PageButton {
+			display: 1,
+			query: page(0),
+			disabled: false,
+		});
+
+		let prev_page = (self.page > 1).then(|| PageButton {
+			display: self.page,
+			query: page(self.page - 1),
+			disabled: false,
+		});
+
+		let current_page = PageButton {
+			display: self.page + 1,
+			query: page(self.page),
+			disabled: true,
+		};
+
+		let next_page = (self.page + 2 < self.pages).then(|| PageButton {
+			display: self.page + 2,
+			query: page(self.page + 1),
+			disabled: false,
+		});
+
+		let last_page = (self.page + 1 < self.pages).then(|| PageButton {
+			display: self.pages,
+			query: page(self.pages - 1),
+			disabled: false,
+		});
+
+		write_html!(formatter,
+			<div class="join">
+				{first_page}
+				{prev_page}
+				{current_page}
+				{next_page}
+				{last_page}
+			</div>
+		)
+	}
+}
+
+#[derive(Deserialize)]
+struct CallbackQuery {
+	#[serde(default)]
+	page: u64,
+}
+
+async fn index(
+	Db(db): Db,
+	session: Session,
+	Query(query): Query<CallbackQuery>,
+	OriginalUri(uri): OriginalUri,
+) -> Result<impl IntoResponse, WebError> {
 	// TODO: Paginate
-	let series = series::Entity::find()
+	let paginator = series::Entity::find()
 		.select_only()
 		.column(series::Column::Name)
 		.column(series::Column::Id)
@@ -221,23 +321,32 @@ async fn index(Db(db): Db, session: Session) -> Result<impl IntoResponse, WebErr
 		.group_by(series::Column::Id)
 		.order_by_asc(series::Column::Name)
 		.into_model::<SeriesCard>()
-		.all(&db)
-		.await?;
+		.paginate(&db, 20);
 
-	let html = Html::from_fn(|f| {
+	let pages = paginator.num_pages().await?;
+	if pages > 0 && query.page >= pages {
+		return Ok((StatusCode::NOT_FOUND, "Page not found").into_response());
+	}
+
+	let series = paginator.fetch_page(query.page).await?;
+
+	let html = Html::from_fn(move |f| {
 		write_html!(f,
 			<Template title="Series" session=session>
 				<h1 class="mb-8 text-4xl font-bold">Series</h1>
+
 				<ul class="grid grid-cols-1 gap-4 auto-rows-cards sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
 					<For items={series}>
 						{ |f, s| s.fmt(f) }
 					</For>
 				</ul>
+
+				<Pagination page=query.page pages=pages url=uri />
 			</Template>
 		)
 	});
 
-	Ok(html)
+	Ok(html.into_response())
 }
 
 pub fn router() -> Router<AppState> {
