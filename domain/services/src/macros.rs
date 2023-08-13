@@ -4,7 +4,7 @@ macro_rules! define_service {
 		$vis:vis struct $name:ident {
 			$(
 				$(#[$dep_meta:meta])*
-				$dep:ident: $dep_ty:ty
+				$dep_vis:vis $dep:ident: $dep_ty:ty
 			),+$(,)?
 		}
 	) => {
@@ -12,7 +12,7 @@ macro_rules! define_service {
 		$vis struct $name {
 			$(
 				$(#[$dep_meta])*
-				$dep: $dep_ty,
+				$dep_vis $dep: $dep_ty,
 			)+
 		}
 

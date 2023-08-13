@@ -7,11 +7,15 @@ migrations-proj := "domain/migrations"
 
 # start dev server
 run: build-css
-	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG" cargo shuttle run
+	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG,sqlx=DEBUG" cargo shuttle run
 
 # build for production
 build: build-css
 	cargo build --release
+
+# start, and re-start on changes
+watch:
+	LIVE_RELOAD="true" cargo watch -s "just start"
 
 # build css
 build-css:

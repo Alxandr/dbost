@@ -40,8 +40,8 @@ impl TvDbUrl {
 	fn into_url(self) -> reqwest::Url {
 		let path = match self {
 			Self::Login => "login".to_owned(),
-			Self::Series(id) => format!("series/{id}/extended?meta=translations&short=true"),
-			Self::Season(id) => format!("seasons/{id}/extended?meta=translations&short=true"),
+			Self::Series(id) => format!("series/{id}/extended?meta=translations"),
+			Self::Season(id) => format!("seasons/{id}/extended?meta=translations"),
 		};
 
 		reqwest::Url::parse(&format!("https://api4.thetvdb.com/v4/{path}")).unwrap()

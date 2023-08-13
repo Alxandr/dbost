@@ -1,15 +1,22 @@
-use axum::response::{IntoResponse, Response};
+mod store;
+
+use arc_swap::ArcSwapOption;
+use async_trait::async_trait;
+use axum::{
+	extract::FromRequestParts,
+	response::{IntoResponse, Response},
+};
 use cookie::{
 	time::{error::ComponentRange, OffsetDateTime},
-	Cookie, CookieBuilder, CookieJar, Key, PrivateJar, SameSite,
+	Cookie, CookieBuilder, Key, SameSite,
 };
 use dbost_entities::{session, user};
 use dbost_utils::OffsetDateTimeExt;
 use futures::{future::BoxFuture, FutureExt};
-use http::{header, HeaderValue, Request, StatusCode};
+use http::{header, request, HeaderValue, Request, StatusCode};
 use sea_orm::{ActiveValue, DatabaseConnection, DbErr, EntityTrait};
 use std::{
-	borrow::{BorrowMut, Cow},
+	borrow::Cow,
 	convert::Infallible,
 	str::FromStr,
 	sync::{
@@ -24,11 +31,13 @@ use tower_service::Service;
 use tracing::{debug, error, info_span, instrument, Instrument};
 use uuid::Uuid;
 
+pub use store::CookieStore;
+
 #[derive(Clone, Debug)]
 pub struct CookieConfig {
 	pub secure: bool,
 	pub domain: Option<String>,
-	pub path: Option<String>,
+	pub path: String,
 }
 
 #[derive(Error, Debug)]
@@ -40,23 +49,52 @@ pub enum SessionError {
 	DbError(#[from] DbErr),
 }
 
-pub struct Session {
+struct SessionInner {
 	id: Uuid,
-	user: Option<user::Model>,
-	delete: Arc<AtomicBool>,
+	user: ArcSwapOption<user::Model>,
+	delete: AtomicBool,
+}
+
+#[derive(Clone)]
+pub struct Session {
+	inner: Arc<SessionInner>,
+}
+
+#[async_trait]
+impl<S> FromRequestParts<S> for Session {
+	type Rejection = Infallible;
+
+	async fn from_request_parts(
+		parts: &mut request::Parts,
+		_state: &S,
+	) -> Result<Self, Self::Rejection> {
+		parts.extensions.get().cloned().ok_or_else(|| {
+			error!("session not found in request extensions");
+			unreachable!()
+		})
+	}
 }
 
 impl Session {
 	pub fn id(&self) -> Uuid {
-		self.id
+		self.inner.id
 	}
 
-	pub fn user(&self) -> Option<&user::Model> {
-		self.user.as_ref()
+	pub fn user(&self) -> Option<Arc<user::Model>> {
+		self.inner.user.load_full()
+	}
+
+	/// Note: this does not update the session in the database
+	pub fn set_user(&self, user: Option<user::Model>) {
+		self.inner.user.store(user.map(Arc::from))
 	}
 
 	pub fn delete(&self) {
-		self.delete.store(true, Ordering::Relaxed)
+		self.inner.delete.store(true, Ordering::Relaxed)
+	}
+
+	fn is_deleted(&self) -> bool {
+		self.inner.delete.load(Ordering::Relaxed)
 	}
 }
 
@@ -109,42 +147,40 @@ impl<S> SessionService<S> {
 		<S as Service<Request<B>>>::Future: Send,
 		B: Send + 'static,
 	{
-		let mut jar = CookieJar::new();
-		req
-			.headers()
-			.get_all(header::COOKIE)
-			.into_iter()
-			.flat_map(|header| header.to_str())
-			.flat_map(Cookie::split_parse_encoded)
-			.flatten()
-			.map(Cookie::into_owned)
-			.for_each(|c| jar.add_original(c));
+		let store = CookieStore::new(req.headers(), self.key.clone());
 
-		let mut res = {
-			let mut jar = jar.private_mut(&self.key);
-
-			let (session, session_cookie, delete) = match self.get_or_create_session(&mut jar).await {
-				Ok(v) => v,
-				Err(e) => {
-					error!("failed to get or create session: {e:#?}");
-					return Ok((StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response());
-				}
-			};
-
-			let span = info_span!("session", session.id = %session.id());
-			req.extensions_mut().insert(session);
-			let res = span
-				.in_scope(|| self.inner.call(req))
-				.instrument(span)
-				.await
-				.map_err(Into::into)?;
-
-			if delete.load(Ordering::Relaxed) {
-				jar.remove(session_cookie);
+		let session = match self.get_or_create_session(&store).await {
+			Ok(v) => v,
+			Err(e) => {
+				error!("failed to get or create session: {e:#?}");
+				return Ok((StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response());
 			}
-
-			res
 		};
+
+		let has_user = session.user().is_some();
+		let span = info_span!("session", session.id = %session.id());
+		req.extensions_mut().insert(session.clone());
+		req.extensions_mut().insert(store.clone());
+		let mut res = span
+			.in_scope(|| self.inner.call(req))
+			.instrument(span)
+			.await
+			.map_err(Into::into)?;
+
+		let mut jar = store.into_jar();
+		let has_user_after_request = session.user().is_some();
+
+		if session.is_deleted() {
+			jar.remove(
+				Cookie::build(COOKIE_NAME, "")
+					.path(self.cookie.path.clone())
+					.finish(),
+			);
+		} else if !has_user && has_user_after_request {
+			// the user was logged in during this request - update the session with
+			// new expiry
+			// TODO:
+		}
 
 		res.headers_mut().extend(
 			jar
@@ -160,8 +196,8 @@ impl<S> SessionService<S> {
 	async fn create_session(
 		&mut self,
 		now: OffsetDateTime,
-		jar: &mut impl CookieStore,
-	) -> Result<(session::Model, Cookie<'static>), SessionError> {
+		jar: &CookieStore,
+	) -> Result<session::Model, SessionError> {
 		let model = session::ActiveModel {
 			id: ActiveValue::NotSet,
 			ctime: ActiveValue::Set(now.into_primitive_utc()),
@@ -182,8 +218,8 @@ impl<S> SessionService<S> {
 			.same_site(SameSite::Strict)
 			.finish();
 
-		jar.add(cookie.clone());
-		Ok((model, cookie))
+		jar.add(cookie);
+		Ok(model)
 	}
 
 	#[instrument(skip_all, err)]
@@ -192,8 +228,8 @@ impl<S> SessionService<S> {
 		now: OffsetDateTime,
 		model: session::Model,
 		cookie: Cookie<'static>,
-		jar: &mut impl CookieStore,
-	) -> Result<(session::Model, Cookie<'static>), SessionError> {
+		jar: &CookieStore,
+	) -> Result<session::Model, SessionError> {
 		let expiry = if model.user_id.is_some() {
 			EXPIRY_USER
 		} else {
@@ -207,20 +243,18 @@ impl<S> SessionService<S> {
 		let model = session::Entity::update(model).exec(&self.db).await?;
 
 		debug!(session.id = %model.id, "updated session expiry");
-		let mut new_cookie = cookie.clone();
+		let mut new_cookie = cookie.clone().apply(&self.cookie);
+
 		new_cookie.set_expires(model.etime.assume_utc());
 
-		jar.add(new_cookie.clone());
-		Ok((model, new_cookie))
+		jar.add(new_cookie);
+		Ok(model)
 	}
 
 	#[instrument(skip_all, err)]
-	async fn get_or_create_session(
-		&mut self,
-		jar: &mut impl CookieStore,
-	) -> Result<(Session, Cookie<'static>, Arc<AtomicBool>), SessionError> {
+	async fn get_or_create_session(&mut self, jar: &CookieStore) -> Result<Session, SessionError> {
 		let now = OffsetDateTime::now_utc();
-		let (session, session_cookie) = match jar.get(COOKIE_NAME) {
+		let session = match jar.get(COOKIE_NAME) {
 			None => {
 				debug!("no session cookie");
 				self.create_session(now, jar).await?
@@ -240,13 +274,13 @@ impl<S> SessionService<S> {
 							self.create_session(now, jar).await?
 						}
 						Some(model) => {
-							// if it's been more than 10 minutes since we last updated atime,
+							// if it's been more than 1 hour since we last updated atime,
 							// update it
-							if model.atime.assume_utc() + Duration::minutes(10) < now {
+							if model.atime.assume_utc() + Duration::hours(1) < now {
 								self.update_session(now, model, cookie, jar).await?
 							} else {
 								debug!("session up to date");
-								(model, cookie)
+								model
 							}
 						}
 					}
@@ -259,13 +293,15 @@ impl<S> SessionService<S> {
 			Some(id) => user::Entity::find_by_id(id).one(&self.db).await?,
 		};
 
-		let delete = Arc::new(AtomicBool::new(false));
 		let session = Session {
-			id: session.id,
-			user,
-			delete: delete.clone(),
+			inner: Arc::new(SessionInner {
+				id: session.id,
+				user: ArcSwapOption::new(user.map(Arc::from)),
+				delete: AtomicBool::new(false),
+			}),
 		};
-		Ok((session, session_cookie, delete))
+
+		Ok(session)
 	}
 }
 
@@ -299,40 +335,25 @@ trait CookieBuilderExt {
 impl<'a> CookieBuilderExt for CookieBuilder<'a> {
 	fn apply(mut self, config: &CookieConfig) -> Self {
 		self = self.secure(config.secure);
+		self = self.path(config.path.clone());
 
 		if let Some(domain) = config.domain.as_ref() {
 			self = self.domain(Cow::Owned(domain.clone()));
-		}
-
-		if let Some(path) = config.domain.as_ref() {
-			self = self.path(Cow::Owned(path.clone()));
 		}
 
 		self
 	}
 }
 
-trait CookieStore {
-	fn get(&self, name: &str) -> Option<Cookie<'static>>;
-	fn add(&mut self, cookie: Cookie<'static>);
-}
+impl<'a> CookieBuilderExt for Cookie<'a> {
+	fn apply(mut self, config: &CookieConfig) -> Self {
+		self.set_secure(config.secure);
+		self.set_path(config.path.clone());
 
-impl CookieStore for CookieJar {
-	fn get(&self, name: &str) -> Option<Cookie<'static>> {
-		self.get(name).cloned()
-	}
+		if let Some(domain) = config.domain.as_ref() {
+			self.set_domain(Cow::Owned(domain.clone()));
+		}
 
-	fn add(&mut self, cookie: Cookie<'static>) {
-		self.add(cookie)
-	}
-}
-
-impl<S: BorrowMut<CookieJar>> CookieStore for PrivateJar<S> {
-	fn get(&self, name: &str) -> Option<Cookie<'static>> {
-		self.get(name)
-	}
-
-	fn add(&mut self, cookie: Cookie<'static>) {
-		self.add(cookie)
+		self
 	}
 }

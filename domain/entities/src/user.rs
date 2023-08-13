@@ -16,6 +16,7 @@ pub struct Model {
 	pub id: Uuid,
 	pub display_name: String,
 	pub email: String,
+	pub avatar_url: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -23,6 +24,7 @@ pub enum Column {
 	Id,
 	DisplayName,
 	Email,
+	AvatarUrl,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -49,7 +51,8 @@ impl ColumnTrait for Column {
 		match self {
 			Self::Id => ColumnType::Uuid.def(),
 			Self::DisplayName => ColumnType::String(None).def(),
-			Self::Email => ColumnType::String(None).def(),
+			Self::Email => ColumnType::String(None).def().unique(),
+			Self::AvatarUrl => ColumnType::String(None).def().null(),
 		}
 	}
 }

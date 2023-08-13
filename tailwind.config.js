@@ -2,7 +2,18 @@
 module.exports = {
 	content: ["./src/**/*.rs"],
 	theme: {
-		extend: {},
+		extend: {
+			gridTemplateColumns: {
+				subgrid: "subgrid",
+			},
+			gridTemplateRows: {
+				subgrid: "subgrid",
+			},
+			gridAutoRows: {
+				// cards: "1fr auto",
+				cards: "min-content auto",
+			},
+		},
 	},
 	plugins: [require("@tailwindcss/typography"), require("daisyui")],
 };

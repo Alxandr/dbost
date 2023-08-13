@@ -4,11 +4,11 @@ members = [
 	"lib/shuttle-sea-orm",
 	"lib/axum-healthcheck",
 	"lib/tvdb-client",
+	"lib/session",
+	"lib/utils",
 	"domain/entities",
 	"domain/migrations",
 	"domain/services",
-	"domain/session",
-	"domain/utils",
 ]
 
 [package]
@@ -17,14 +17,17 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
+async-trait = "0.1.73"
 axum = { version = "0.6.19", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
 dbost-entities = { version = "0.0.0", path = "./domain/entities" }
 dbost-migration = { version = "0.0.0", path = "./domain/migrations" }
-dbost-session = { version = "0.0.0", path = "./domain/session" }
-dbost-utils = { version = "0.0.0", path = "./domain/utils" }
+dbost-services = { version = "0.0.0", path = "./domain/services" }
+dbost-session = { version = "0.0.0", path = "./lib/session" }
+dbost-utils = { version = "0.0.0", path = "./lib/utils" }
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
 futures-util = { version = "0.3.28", default-features = false }
+md5 = "0.7.0"
 rstml-component = "0.1.1"
 rstml-component-axum = "0.2.0"
 sea-orm = { version = "0.12.1", features = [
@@ -34,12 +37,14 @@ sea-orm = { version = "0.12.1", features = [
 	"macros",
 	"debug-print",
 ] }
+sea-query = { version = "0.30.0", default-features = false, features = ["with-time", "with-uuid", "backend-postgres"] }
 serde = { version = "1.0.178", features = ["derive"] }
 shuttle-axum = "0.21.0"
 shuttle-runtime = "0.21.0"
 shuttle-sea-orm = { version = "0.0.0", path = "./lib/shuttle-sea-orm" }
 shuttle-secrets = "0.21.0"
 shuttle-static-folder = "0.21.0"
+static_assertions = "1.1.0"
 thiserror = "1.0.44"
 time = { version = "0.3.25", default-features = false, features = ["std"] }
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
@@ -52,6 +57,8 @@ tower-http = { version = "0.4.3", features = [
 	"auth",
 	"fs",
 ] }
+tower-livereload = "0.8.0"
 tracing = "0.1.37"
 tvdb-client = { version = "0.0.0", path = "./lib/tvdb-client" }
+url = "2.4.0"
 uuid = { version = "1.4.1", features = ["serde"] }

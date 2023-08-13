@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
 sea-orm = { version = "0.12.1", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
+time = "0.3.25"

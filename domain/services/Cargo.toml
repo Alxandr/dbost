@@ -6,6 +6,26 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "0.1.72"
+arc-swap = "1.6.0"
+async-trait = { version = "0.1.72", default-features = false }
 axum = { version = "0.6.20", default-features = false }
+base64 = { version = "0.21.2" }
+bincode = { version = "1.3.3", default-features = false }
+cookie = { version = "0.17.0", default-features = false }
+dbost-entities = { version = "0.0.0", path = "../entities" }
+dbost-session = { version = "0.0.0", path = "../../lib/session" }
+dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
+futures = { version = "0.3.28", default-features = false, features = ["std"] }
+http = "0.2.9"
+indexmap = "2.0.0"
+oauth2 = { version = "4.4.1", default-features = false }
+openidconnect = { version = "3.3.0", default-features = false, features = ["reqwest"] }
 sea-orm = "0.12.2"
+serde = { version = "1.0.183", default-features = false, features = ["std", "rc", "derive"] }
+serde_json = "1.0.104"
+thiserror = { version = "1.0.44", default-features = false }
+time = "0.3.25"
+tracing = { version = "0.1.37", default-features = false, features = ["std"] }
+tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
+url = { version = "2.4.0", default-features = false }
+uuid = "1.4.1"

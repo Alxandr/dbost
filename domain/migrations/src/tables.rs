@@ -8,6 +8,7 @@ pub enum Series {
 	#[iden = "tvdb_id"]
 	TvDbId,
 	ThemeSongId,
+	Image,
 }
 
 #[derive(Iden, Clone, Copy)]
@@ -20,6 +21,7 @@ pub enum Season {
 	#[iden = "tvdb_id"]
 	TvDbId,
 	ThemeSongId,
+	Image,
 }
 
 #[derive(Iden, Clone, Copy)]
@@ -60,6 +62,7 @@ pub enum User {
 	Id,
 	DisplayName,
 	Email,
+	AvatarUrl,
 }
 
 #[derive(Iden, Clone, Copy)]

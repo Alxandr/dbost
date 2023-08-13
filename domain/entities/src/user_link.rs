@@ -49,7 +49,7 @@ impl ColumnTrait for Column {
 		match self {
 			Self::Service => ColumnType::String(None).def(),
 			Self::UserId => ColumnType::Uuid.def(),
-			Self::ServiceUserid => ColumnType::String(None).def().unique(),
+			Self::ServiceUserid => ColumnType::String(None).def(),
 		}
 	}
 }

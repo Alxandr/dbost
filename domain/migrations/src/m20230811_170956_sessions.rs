@@ -19,6 +19,13 @@ impl MigrationTrait for Migration {
 					)
 					.col(ColumnDef::new(User::DisplayName).string().not_null())
 					.col(ColumnDef::new(User::Email).string().not_null())
+					.col(ColumnDef::new(User::AvatarUrl).string().null())
+					.index(
+						Index::create()
+							.name("uq-user-email")
+							.col(User::Email)
+							.unique(),
+					)
 					.to_owned(),
 			)
 			.await?;
@@ -31,6 +38,7 @@ impl MigrationTrait for Migration {
 					.col(ColumnDef::new(UserLink::UserId).uuid().not_null())
 					.col(ColumnDef::new(UserLink::ServiceUserId).string().not_null())
 					.primary_key(
+						// each user can only have one link per service
 						Index::create()
 							.name("pk-userlink")
 							.col(UserLink::Service)
@@ -38,8 +46,10 @@ impl MigrationTrait for Migration {
 							.primary(),
 					)
 					.index(
+						// each service can only have one link per service-user-id
 						Index::create()
 							.name("uq-userlink_service-userid")
+							.col(UserLink::Service)
 							.col(UserLink::ServiceUserId)
 							.unique()
 							.index_type(IndexType::Hash),

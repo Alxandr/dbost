@@ -18,6 +18,7 @@ pub struct Model {
 	pub tvdb_id: i32,
 	pub theme_song_id: Option<Uuid>,
 	pub version: TimeDateTime,
+	pub image: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -28,6 +29,7 @@ pub enum Column {
 	ThemeSongId,
 	#[sea_orm(column_name = "_version")]
 	Version,
+	Image,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -57,6 +59,7 @@ impl ColumnTrait for Column {
 			Self::TvdbId => ColumnType::Integer.def(),
 			Self::ThemeSongId => ColumnType::Uuid.def().null(),
 			Self::Version => ColumnType::DateTime.def(),
+			Self::Image => ColumnType::String(None).def().null(),
 		}
 	}
 }

@@ -1,19 +1,38 @@
 use crate::{TvDbClient, TvDbError, TvDbUrl};
 use async_trait::async_trait;
 use futures::{stream::FuturesUnordered, StreamExt};
+use itertools::Itertools;
 use reqwest::Response;
 use serde::Deserialize;
 use tracing::{error, info, info_span, instrument, Instrument};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct SeriesDto {
 	id: u64,
 	name: String,
 	seasons: Vec<SeriesSeasonDto>,
+	#[serde(default)]
+	image: Option<String>,
+	#[serde(default, deserialize_with = "nullable_vec")]
+	artworks: Vec<ArtworkDto>,
 	translations: TranslationsDto,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
+struct ArtworkDto {
+	#[serde(rename = "type")]
+	ty: i32,
+	#[serde(default)]
+	image: Option<String>,
+	#[serde(default)]
+	thumbnail: Option<String>,
+	// #[serde(default)]
+	// language: Option<String>,
+	#[serde(default)]
+	score: u32,
+}
+
+#[derive(Deserialize, Debug)]
 struct SeriesSeasonDto {
 	id: u64,
 	#[serde(rename = "type")]
@@ -21,28 +40,32 @@ struct SeriesSeasonDto {
 	number: u16,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct SeasonDto {
 	// id: u64,
-	#[serde(default = "Default::default")]
+	#[serde(default)]
 	name: Option<String>,
-	#[serde(default = "Default::default")]
+	#[serde(default)]
 	translations: TranslationsDto,
+	#[serde(default)]
+	image: Option<String>,
+	#[serde(default, deserialize_with = "nullable_vec")]
+	artworks: Vec<ArtworkDto>,
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Debug)]
 struct TranslationsDto {
-	#[serde(rename = "nameTranslations", default = "Default::default")]
+	#[serde(rename = "nameTranslations", default)]
 	name_translations: Option<Vec<TranslationDto>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct TranslationDto {
 	language: String,
 	name: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct SeasonTypeDto {
 	// id: u64,
 	// name: String,
@@ -58,6 +81,7 @@ struct ResultDto<T> {
 pub struct Series {
 	pub id: u64,
 	pub name: String,
+	pub image: Option<String>,
 	pub seasons: Vec<Season>,
 }
 
@@ -65,6 +89,7 @@ pub struct Season {
 	pub id: u64,
 	pub number: u16,
 	pub name: Option<String>,
+	pub image: Option<String>,
 }
 
 async fn check_respons_status(response: Response) -> Result<Response, TvDbError> {
@@ -111,6 +136,7 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 			e
 		})?
 		.data;
+
 	let name = season
 		.translations
 		.name_translations
@@ -125,7 +151,34 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		})
 		.or(season.name);
 
-	Ok(Season { id, number, name })
+	let image = get_image(season.image, season.artworks);
+	Ok(Season {
+		id,
+		number,
+		name,
+		image,
+	})
+}
+
+fn get_image(image: Option<String>, artworks: Vec<ArtworkDto>) -> Option<String> {
+	if let Some(image) = image {
+		return Some(image);
+	}
+
+	let mut artworks = artworks
+		.into_iter()
+		.filter(|a| matches!(a.ty, 2 | 7))
+		.sorted_by_key(|a| a.score)
+		.collect_vec();
+
+	artworks
+		.iter()
+		.enumerate()
+		.find(|(_, a)| a.thumbnail.is_some())
+		.or_else(|| artworks.iter().enumerate().find(|(_, a)| a.image.is_some()))
+		.map(|(i, _)| i)
+		.map(|i| artworks.remove(i))
+		.and_then(|a| a.image.or(a.thumbnail))
 }
 
 #[instrument(skip(client))]
@@ -141,6 +194,7 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 
 	let series = response.json::<ResultDto<SeriesDto>>().await?.data;
 	let id = series.id;
+	let image = get_image(series.image, series.artworks);
 	let name = series
 		.translations
 		.name_translations
@@ -177,5 +231,19 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 
 	seasons.sort_by(|l, r| l.number.cmp(&r.number));
 
-	Ok(Some(Series { id, name, seasons }))
+	Ok(Some(Series {
+		id,
+		name,
+		seasons,
+		image,
+	}))
+}
+
+fn nullable_vec<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+	D: serde::Deserializer<'de>,
+	T: serde::Deserialize<'de>,
+{
+	let opt = Option::deserialize(deserializer)?;
+	Ok(opt.unwrap_or_default())
 }
