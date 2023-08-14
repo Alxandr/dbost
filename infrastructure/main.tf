@@ -20,6 +20,7 @@ resource "aws_db_instance" "dbost_db" {
   engine_version                = "15.4"
   identifier                    = "dbost"
   instance_class                = "db.t4g.micro"
+  username                      = "dbost-master"
   manage_master_user_password   = true
   master_user_secret_kms_key_id = aws_kms_key.dbost_db_master_key.key_id
   skip_final_snapshot           = true
