@@ -9,18 +9,18 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
-resource "aws_kms_key" "db_master_password" {
-  description = "dBost DB master password"
+resource "aws_kms_key" "dbost_db_master_key" {
+  description = "dBost DB master key"
 }
 
-# resource "aws_db_instance" "dBost-db" {
-# 	allocated_storage    = 10
-#   db_name              = "mydb"
-#   engine               = "mysql"
-#   engine_version       = "5.7"
-#   instance_class       = "db.t3.micro"
-#   username             = "foo"
-#   password             = "foobarbaz"
-#   parameter_group_name = "default.mysql5.7"
-#   skip_final_snapshot  = true
-# }
+resource "aws_db_instance" "dbost_db" {
+  allocated_storage             = 20
+  db_name                       = "dbost"
+  engine                        = "postgres"
+  engine_version                = "15.4"
+  identifier                    = "dbost"
+  instance_class                = "db.t4g.micro"
+  manage_master_user_password   = true
+  master_user_secret_kms_key_id = aws_kms_key.dbost_db_master_key.key_id
+  skip_final_snapshot           = true
+}
