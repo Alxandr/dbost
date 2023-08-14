@@ -24,4 +24,5 @@ resource "aws_db_instance" "dbost_db" {
   manage_master_user_password   = true
   master_user_secret_kms_key_id = aws_kms_key.dbost_db_master_key.key_id
   skip_final_snapshot           = true
+  storage_encrypted             = true
 }
