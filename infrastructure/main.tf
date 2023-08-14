@@ -1,14 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-
-  required_version = ">= 1.2.0"
-}
-
 resource "aws_kms_key" "dbost_db_master_key" {
   description = "dBost DB master key"
 }
@@ -26,3 +15,25 @@ resource "aws_db_instance" "dbost_db" {
   skip_final_snapshot           = true
   storage_encrypted             = true
 }
+
+resource "random_password" "db_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "postgresql_role" "db_role" {
+  name               = "dbost"
+  login              = true
+  password           = random_password.db_password.result
+  encrypted_password = true
+}
+
+# provider "postgresql" {
+#   scheme    = "awspostgres"
+#   host      = "db.domain.name"
+#   port      = "5432"
+#   username  = "db_username"
+#   password  = "db_password"
+#   superuser = false
+# }
