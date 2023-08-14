@@ -35,7 +35,7 @@ provider "postgresql" {
   host             = aws_db_instance.dbost_db.address
   port             = aws_db_instance.dbost_db.port
   username         = aws_db_instance.dbost_db.username
-  password         = aws_db_instance.dbost_db.password
+  password         = random_password.db_master_password.result
   aws_rds_iam_auth = true
   superuser        = false
 }
