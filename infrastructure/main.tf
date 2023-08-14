@@ -17,7 +17,7 @@ resource "aws_db_instance" "dbost_db" {
   allocated_storage             = 20
   db_name                       = "dbost"
   engine                        = "postgres"
-  engine_version                = "15.4"
+  engine_version                = "15.3"
   identifier                    = "dbost"
   instance_class                = "db.t4g.micro"
   username                      = "dbost-master"
