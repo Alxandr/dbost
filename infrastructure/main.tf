@@ -149,16 +149,28 @@ resource "postgresql_role" "migrator" {
 resource "postgresql_schema" "dbost" {
   name  = "dbost"
   owner = aws_db_instance.dbost_db.username
-
-  policy {
-    role  = postgresql_role.app.name
-    usage = true
-  }
-
-  policy {
-    role   = postgresql_role.migrator.name
-    usage  = true
-    create = true
-  }
 }
 
+resource "postgresql_grant" "revoke_public" {
+  database    = aws_db_instance.dbost_db.db_name
+  role        = "public"
+  schema      = "public"
+  object_type = "schema"
+  privileges  = []
+}
+
+resource "postgresql_grant" "dbost_app" {
+  database    = aws_db_instance.dbost_db.db_name
+  role        = postgresql_role.app.name
+  schema      = postgresql_schema.dbost.name
+  object_type = "schema"
+  privileges  = ["USAGE"]
+}
+
+resource "postgresql_grant" "dbost_migrator" {
+  database    = aws_db_instance.dbost_db.db_name
+  role        = postgresql_role.migrator.name
+  schema      = postgresql_schema.dbost.name
+  object_type = "schema"
+  privileges  = ["USAGE", "CREATE"]
+}
