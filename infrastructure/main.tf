@@ -49,14 +49,6 @@ resource "aws_security_group" "dbost_db" {
   name_prefix = "dbost-rds"
   description = "Allow PostgreSQL inbound traffic"
   vpc_id      = module.vpc.vpc_id
-
-  # ingress {
-  #   description = "TLS from VPC"
-  #   from_port   = 5432
-  #   to_port     = 5432
-  #   protocol    = "tcp"
-  #   cidr_blocks = concat([module.vpc.vpc_cidr_block], data.spacelift_ips.ips.ips)
-  # }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
