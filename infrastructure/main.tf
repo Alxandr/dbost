@@ -1,5 +1,3 @@
-data "spacelift_ips" "ips" {}
-
 data "aws_availability_zones" "available" {
   # Only Availability Zones (no Local Zones):
   filter {
@@ -9,9 +7,8 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  azs           = slice(data.aws_availability_zones.available.names, 0, 3)
-  vpc_cidr      = "10.0.0.0/16"
-  spacelift_ips = tolist(data.spacelift_ips.ips.ips)
+  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_cidr = "10.0.0.0/16"
 }
 
 module "vpc" {
@@ -64,23 +61,13 @@ resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
   security_group_id = aws_security_group.dbost_db.id
 }
 
+# figure out how to limit this to spacelift
 resource "aws_vpc_security_group_ingress_rule" "dbost_db_all_ingress" {
   description       = "TLS from anywhere"
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
   cidr_ipv4         = "0.0.0.0/0"
-  security_group_id = aws_security_group.dbost_db.id
-}
-
-resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
-  count = length(local.spacelift_ips)
-
-  description       = "TLS from spacelift"
-  from_port         = 5432
-  to_port           = 5432
-  ip_protocol       = "tcp"
-  cidr_ipv4         = "${local.spacelift_ips[count.index]}/32" # single address cidr
   security_group_id = aws_security_group.dbost_db.id
 }
 
@@ -119,16 +106,22 @@ resource "aws_db_instance" "dbost_db" {
   publicly_accessible = true
 }
 
-resource "random_password" "db_password" {
+resource "random_password" "db_user_app_password" {
   length           = 32
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-resource "postgresql_role" "db_role" {
-  name               = "dbost"
+resource "random_password" "db_user_migrator_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "postgresql_role" "app" {
+  name               = "dbost_app"
   login              = true
-  password           = random_password.db_password.result
+  password           = random_password.db_user_app_password.result
   encrypted_password = true
 
   depends_on = [
@@ -140,11 +133,34 @@ resource "postgresql_role" "db_role" {
   ]
 }
 
-# provider "postgresql" {
-#   scheme    = "awspostgres"
-#   host      = "db.domain.name"
-#   port      = "5432"
-#   username  = "db_username"
-#   password  = "db_password"
-#   superuser = false
-# }
+resource "postgresql_role" "migrator" {
+  name               = "dbost_migrator"
+  login              = true
+  password           = random_password.db_user_migrator_password.result
+  encrypted_password = true
+
+  depends_on = [
+    module.vpc,
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+  ]
+}
+
+resource "postgresql_schema" "dbost" {
+  name  = "dbost"
+  owner = aws_db_instance.dbost_db.username
+
+  policy {
+    role  = postgresql_role.db_role.name
+    usage = true
+  }
+
+  policy {
+    role   = postgresql_role.migrator.name
+    usage  = true
+    create = true
+  }
+}
+
