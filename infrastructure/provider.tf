@@ -11,7 +11,7 @@ provider "aws" {
 
 provider "postgresql" {
   scheme           = "awspostgres"
-  host             = aws_db_instance.dbost_db.endpoint
+  host             = aws_db_instance.dbost_db.address
   port             = aws_db_instance.dbost_db.port
   username         = aws_db_instance.dbost_db.username
   password         = random_password.db_master_password.result

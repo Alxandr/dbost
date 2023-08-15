@@ -114,6 +114,12 @@ resource "postgresql_role" "db_role" {
   login              = true
   password           = random_password.db_password.result
   encrypted_password = true
+
+  depends_on = [
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress
+  ]
 }
 
 # provider "postgresql" {
