@@ -117,12 +117,12 @@ resource "random_password" "db_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-# resource "postgresql_role" "db_role" {
-#   name               = "dbost"
-#   login              = true
-#   password           = random_password.db_password.result
-#   encrypted_password = true
-# }
+resource "postgresql_role" "db_role" {
+  name               = "dbost"
+  login              = true
+  password           = random_password.db_password.result
+  encrypted_password = true
+}
 
 # provider "postgresql" {
 #   scheme    = "awspostgres"
