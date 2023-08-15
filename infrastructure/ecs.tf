@@ -13,7 +13,6 @@ resource "aws_ecs_task_definition" "dbost-db-migrator" {
   container_definitions = jsonencode([{
     name   = "dbost-db-migrator"
     image  = "ghcr.io/alxandr/dbost/migrator:latest"
-    cpu    = 1
     memory = 1024
     environment = [
       {
