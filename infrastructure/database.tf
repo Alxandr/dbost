@@ -1,0 +1,107 @@
+
+
+###################################################################################
+#
+# DATABASE
+#
+###################################################################################
+
+resource "random_password" "db_master_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_db_parameter_group" "dbost_db" {
+  name   = "dbost"
+  family = "postgres15"
+
+  parameter {
+    name  = "log_connections"
+    value = "1"
+  }
+}
+
+resource "aws_db_instance" "dbost_db" {
+  allocated_storage      = 20
+  db_name                = "dbost"
+  engine                 = "postgres"
+  engine_version         = "15.3"
+  identifier             = "dbost"
+  instance_class         = "db.t4g.micro"
+  username               = "dbost_master"
+  password               = random_password.db_master_password.result
+  db_subnet_group_name   = module.vpc.database_subnet_group_name
+  vpc_security_group_ids = [aws_security_group.dbost_db.id]
+  parameter_group_name   = aws_db_parameter_group.dbost_db.name
+  skip_final_snapshot    = true
+  storage_encrypted      = true
+
+  # TODO: remove
+  publicly_accessible = true
+}
+
+resource "random_password" "db_user_app_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "random_password" "db_user_migrator_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "postgresql_role" "app" {
+  name               = "dbost_app"
+  login              = true
+  password           = random_password.db_user_app_password.result
+  encrypted_password = true
+
+  depends_on = [
+    module.vpc,
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+  ]
+}
+
+resource "postgresql_role" "migrator" {
+  name               = "dbost_migrator"
+  login              = true
+  password           = random_password.db_user_migrator_password.result
+  encrypted_password = true
+
+  depends_on = [
+    module.vpc,
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+  ]
+}
+
+# resource "postgresql_grant" "dbost_app" {
+#   database    = "postgres"
+#   role        = postgresql_role.app.name
+#   schema      = "public"
+#   object_type = "schema"
+#   privileges  = ["USAGE"]
+# }
+
+# resource "postgresql_grant" "dbost_migrator" {
+#   database    = "postgres"
+#   role        = postgresql_role.migrator.name
+#   schema      = "public"
+#   object_type = "schema"
+#   privileges  = ["USAGE", "CREATE"]
+# }
+
+resource "aws_secretsmanager_secret" "db_master_password" {
+  name = "dbost_db_master_password"
+}
+
+resource "aws_secretsmanager_secret_version" "db_master_password" {
+  secret_id     = aws_secretsmanager_secret.db_master_password.id
+  secret_string = random_password.db_master_password.result
+}
