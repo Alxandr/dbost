@@ -11,7 +11,10 @@ use axum::{
 use dbost_entities::{season, series, user};
 use dbost_session::Session;
 use indexmap::IndexMap;
-use rstml_component::{write_html, For, HtmlComponent, HtmlContent, HtmlFormatter};
+use rstml_component::{
+	write_html, For, HtmlAttributeFormatter, HtmlAttributeValue, HtmlComponent, HtmlContent,
+	HtmlFormatter,
+};
 use rstml_component_axum::Html;
 use sea_orm::{
 	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryOrder, QuerySelect,
@@ -219,7 +222,7 @@ impl HtmlContent for SeriesCard {
 
 #[derive(HtmlComponent)]
 struct Pagination {
-	page: u64,
+	page: PageNumber,
 	pages: u64,
 	url: Uri,
 }
@@ -227,6 +230,7 @@ struct Pagination {
 impl HtmlContent for Pagination {
 	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
 		struct PageButton {
+			id: &'static str,
 			display: u64,
 			query: String,
 			disabled: bool,
@@ -236,11 +240,11 @@ impl HtmlContent for Pagination {
 			fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
 				if self.disabled {
 					write_html!(formatter,
-						<a href=("?", self.query) class="join-item btn" disabled>{self.display}</a>
+						<a id=self.id href=("?", self.query) class="join-item btn" disabled>{self.display}</a>
 					)
 				} else {
 					write_html!(formatter,
-						<a href=("?", self.query) class="join-item btn">{self.display}</a>
+						<a id=self.id href=("?", self.query) class="join-item btn">{self.display}</a>
 					)
 				}
 			}
@@ -251,57 +255,68 @@ impl HtmlContent for Pagination {
 
 		let page = move |page: u64| {
 			let mut query = query.clone();
-			query.insert("page", Some(page.to_string()));
+			if page <= 1 {
+				query.remove("page");
+			} else {
+				query.insert("page", Some(page.to_string()));
+			}
 
 			serde_urlencoded::to_string(query).unwrap()
 		};
 
 		let first_page = (self.page > 0).then(|| PageButton {
+			id: "goto-first",
 			display: 1,
-			query: page(0),
+			query: page(1),
 			disabled: false,
 		});
 
 		let prev_page = (self.page > 1).then(|| PageButton {
-			display: self.page,
-			query: page(self.page - 1),
+			id: "goto-prev",
+			display: self.page.display(),
+			query: page(self.page.display()),
 			disabled: false,
 		});
 
 		let current_page = PageButton {
-			display: self.page + 1,
-			query: page(self.page),
+			id: "goto-current",
+			display: self.page.display(),
+			query: page(self.page.display()),
 			disabled: true,
 		};
 
-		let next_page = (self.page + 2 < self.pages).then(|| PageButton {
-			display: self.page + 2,
-			query: page(self.page + 1),
+		let next_page = (self.page.index() + 2 < self.pages).then(|| PageButton {
+			id: "goto-next",
+			display: self.page.display() + 1,
+			query: page(self.page.display() + 1),
 			disabled: false,
 		});
 
-		let last_page = (self.page + 1 < self.pages).then(|| PageButton {
+		let last_page = (self.page.index() + 1 < self.pages).then(|| PageButton {
+			id: "goto-last",
 			display: self.pages,
-			query: page(self.pages - 1),
+			query: page(self.pages),
 			disabled: false,
 		});
 
 		write_html!(formatter,
-			<div class="join">
-				{first_page}
-				{prev_page}
-				{current_page}
-				{next_page}
-				{last_page}
-			</div>
+			<nav class="flex flex-row justify-center p-4">
+				<div class="join">
+					{first_page}
+					{prev_page}
+					{current_page}
+					{next_page}
+					{last_page}
+				</div>
+			</nav>
 		)
 	}
 }
 
 #[derive(Deserialize)]
 struct CallbackQuery {
-	#[serde(default)]
-	page: u64,
+	// #[serde(default)]
+	page: PageNumber,
 }
 
 async fn index(
@@ -310,7 +325,6 @@ async fn index(
 	Query(query): Query<CallbackQuery>,
 	OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, WebError> {
-	// TODO: Paginate
 	let paginator = series::Entity::find()
 		.select_only()
 		.column(series::Column::Name)
@@ -321,14 +335,14 @@ async fn index(
 		.group_by(series::Column::Id)
 		.order_by_asc(series::Column::Name)
 		.into_model::<SeriesCard>()
-		.paginate(&db, 20);
+		.paginate(&db, 60);
 
 	let pages = paginator.num_pages().await?;
 	if pages > 0 && query.page >= pages {
 		return Ok((StatusCode::NOT_FOUND, "Page not found").into_response());
 	}
 
-	let series = paginator.fetch_page(query.page).await?;
+	let series = paginator.fetch_page(query.page.index()).await?;
 
 	let html = Html::from_fn(move |f| {
 		write_html!(f,
@@ -353,4 +367,73 @@ pub fn router() -> Router<AppState> {
 	Router::new()
 		.nest("/auth", auth::router())
 		.route("/", get(index))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+struct PageNumber(u64);
+
+impl PageNumber {
+	fn index(&self) -> u64 {
+		self.0
+	}
+
+	fn display(&self) -> u64 {
+		self.0 + 1
+	}
+}
+
+impl PartialEq<u64> for PageNumber {
+	fn eq(&self, other: &u64) -> bool {
+		self.index() == *other
+	}
+}
+
+impl PartialEq<PageNumber> for u64 {
+	fn eq(&self, other: &PageNumber) -> bool {
+		*self == other.index()
+	}
+}
+
+impl PartialOrd<u64> for PageNumber {
+	fn partial_cmp(&self, other: &u64) -> Option<std::cmp::Ordering> {
+		self.index().partial_cmp(other)
+	}
+}
+
+impl PartialOrd<PageNumber> for u64 {
+	fn partial_cmp(&self, other: &PageNumber) -> Option<std::cmp::Ordering> {
+		self.partial_cmp(&other.index())
+	}
+}
+
+impl fmt::Display for PageNumber {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.display())
+	}
+}
+
+impl HtmlAttributeValue for PageNumber {
+	fn fmt(self, formatter: &mut HtmlAttributeFormatter) -> fmt::Result {
+		HtmlAttributeValue::fmt(self.0 + 1, formatter)
+	}
+}
+
+impl HtmlContent for PageNumber {
+	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
+		HtmlContent::fmt(self.0 + 1, formatter)
+	}
+}
+
+impl<'de> Deserialize<'de> for PageNumber {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		let v: Option<u64> = Option::deserialize(deserializer)?;
+		match v {
+			None => Ok(Self(0)),
+			Some(0) => Ok(Self(0)),
+			Some(v) => Ok(Self(v - 1)),
+		}
+	}
 }

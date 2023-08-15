@@ -13,7 +13,11 @@ bake:
 
 # start dev server
 run: build-css
-	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG,sqlx=DEBUG" cargo run
+	cargo run --features live-reload
+
+# seed database
+seed:
+	cargo run --package dbost-jobs-seed
 
 # build for production
 build: build-css
@@ -21,7 +25,7 @@ build: build-css
 
 # start, and re-start on changes
 watch:
-	LIVE_RELOAD="true" cargo watch -s "just start"
+	cargo watch -s "just run"
 
 # build css
 build-css:

@@ -812,6 +812,7 @@ dependencies = [
  "tower-livereload",
  "tracing",
  "tracing-forest",
+ "tracing-subscriber",
  "tvdb-client",
  "url",
  "uuid",
@@ -837,6 +838,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-forest",
+ "tracing-subscriber",
  "url",
  "uuid",
 ]
@@ -856,6 +858,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "tracing-forest",
+ "tracing-subscriber",
  "tvdb-client",
  "url",
  "uuid",

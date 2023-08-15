@@ -4,7 +4,9 @@ use dbost_entities::session;
 use dbost_utils::OffsetDateTimeExt;
 use sea_orm::{ColumnTrait, ConnectOptions, Database, EntityTrait, QueryFilter};
 use time::OffsetDateTime;
-use tracing::{debug, warn};
+use tracing::{debug, metadata::LevelFilter, warn};
+use tracing_forest::ForestLayer;
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 #[tokio::main]
 async fn main() {
@@ -16,14 +18,22 @@ fn required_env_var(name: &str) -> String {
 }
 
 async fn _main() {
-	tracing_forest::init();
+	tracing_subscriber::registry()
+		.with(ForestLayer::default())
+		.with(
+			EnvFilter::builder()
+				.with_default_directive(LevelFilter::INFO.into())
+				.from_env_lossy(),
+		)
+		.init();
 
 	let connection_string = required_env_var("DATABASE_URL");
+	let database_schema = required_env_var("DATABASE_SCHEMA");
 	let db = Database::connect(
 		ConnectOptions::new(connection_string)
 			// .sqlx_logging(true)
 			// .sqlx_logging_level(log::LevelFilter::Info)
-			.set_schema_search_path("dbost")
+			.set_schema_search_path(database_schema)
 			.to_owned(),
 	)
 	.await

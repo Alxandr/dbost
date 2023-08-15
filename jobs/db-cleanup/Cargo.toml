@@ -35,5 +35,6 @@ tracing-forest = { version = "0.1.6", default-features = false, features = [
 	"ansi",
 	"smallvec",
 ] }
+tracing-subscriber = { version = "0.3.17", default-features = false, features = ["std"] }
 url = "2.4.0"
 uuid = { version = "1.4.1", features = ["serde"] }

@@ -2,7 +2,9 @@ use dbost_services::series::SeriesService;
 use futures::FutureExt;
 use sea_orm::{ConnectOptions, Database, TransactionTrait};
 use std::{convert::Infallible, env, sync::Arc};
-use tracing::info;
+use tracing::{info, metadata::LevelFilter};
+use tracing_forest::ForestLayer;
+use tracing_subscriber::{prelude::*, EnvFilter};
 use tvdb_client::TvDbClient;
 
 #[tokio::main]
@@ -15,9 +17,17 @@ fn required_env_var(name: &str) -> String {
 }
 
 async fn _main() {
-	tracing_forest::init();
+	tracing_subscriber::registry()
+		.with(ForestLayer::default())
+		.with(
+			EnvFilter::builder()
+				.with_default_directive(LevelFilter::INFO.into())
+				.from_env_lossy(),
+		)
+		.init();
 
 	let connection_string = required_env_var("DATABASE_URL");
+	let database_schema = required_env_var("DATABASE_SCHEMA");
 	let tvdb_api_key = required_env_var("TVDB_API_KEY");
 	let tvdb_user_pin = required_env_var("TVDB_USER_PIN");
 
@@ -25,7 +35,7 @@ async fn _main() {
 		ConnectOptions::new(connection_string)
 			// .sqlx_logging(true)
 			// .sqlx_logging_level(log::LevelFilter::Info)
-			.set_schema_search_path("dbost")
+			.set_schema_search_path(database_schema)
 			.to_owned(),
 	)
 	.await

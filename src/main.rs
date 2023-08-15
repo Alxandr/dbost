@@ -23,6 +23,9 @@ use std::{
 use tokio::signal::unix::{signal, SignalKind};
 use tokio_util::sync::CancellationToken;
 use tower_http::{compression::CompressionLayer, services::ServeDir, trace::TraceLayer};
+use tracing::metadata::LevelFilter;
+use tracing_forest::ForestLayer;
+use tracing_subscriber::{prelude::*, EnvFilter};
 use tvdb_client::TvDbClient;
 use url::Url;
 
@@ -71,7 +74,14 @@ fn required_env_var(name: &str) -> String {
 }
 
 async fn axum() -> ! {
-	tracing_forest::init();
+	tracing_subscriber::registry()
+		.with(ForestLayer::default())
+		.with(
+			EnvFilter::builder()
+				.with_default_directive(LevelFilter::INFO.into())
+				.from_env_lossy(),
+		)
+		.init();
 
 	let connection_string = required_env_var("DATABASE_URL");
 	let database_schema = required_env_var("DATABASE_SCHEMA");
@@ -157,7 +167,7 @@ async fn axum() -> ! {
 
 	let port = env::var("PORT")
 		.map(|v| v.parse::<u16>().expect("PORT must be a valid port number"))
-		.unwrap_or(3000);
+		.unwrap_or(8000);
 
 	let addr = SocketAddrV4::new([0, 0, 0, 0].into(), port);
 	let err = axum::Server::bind(&SocketAddr::V4(addr))
