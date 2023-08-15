@@ -165,3 +165,12 @@ resource "postgresql_grant" "dbost_migrator" {
   object_type = "schema"
   privileges  = ["USAGE", "CREATE"]
 }
+
+resource "aws_secretsmanager_secret" "db_master_password" {
+  name = "dbost_db_master_password"
+}
+
+resource "aws_secretsmanager_secret_version" "db_master_password" {
+  secret_id     = aws_secretsmanager_secret.db_master_password.id
+  secret_string = random_password.db_master_password.result
+}
