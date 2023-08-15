@@ -148,6 +148,13 @@ resource "postgresql_role" "migrator" {
 
 resource "postgresql_schema" "dbost" {
   name = "dbost"
+
+  depends_on = [
+    module.vpc,
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+  ]
 }
 
 resource "postgresql_grant" "dbost_app" {
@@ -172,6 +179,13 @@ resource "postgresql_grant" "revoke_public" {
   schema      = "public"
   object_type = "schema"
   privileges  = []
+
+  depends_on = [
+    module.vpc,
+    aws_db_instance.dbost_db,
+    aws_security_group.dbost_db,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+  ]
 }
 
 resource "aws_secretsmanager_secret" "db_master_password" {
