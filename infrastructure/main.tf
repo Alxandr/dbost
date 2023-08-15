@@ -147,8 +147,7 @@ resource "postgresql_role" "migrator" {
 }
 
 resource "postgresql_schema" "dbost" {
-  name  = "dbost"
-  owner = aws_db_instance.dbost_db.username
+  name = "dbost"
 }
 
 resource "postgresql_grant" "revoke_public" {
