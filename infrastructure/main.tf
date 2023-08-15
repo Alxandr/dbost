@@ -146,21 +146,21 @@ resource "postgresql_role" "migrator" {
   ]
 }
 
-resource "postgresql_grant" "dbost_app" {
-  database    = "postgres"
-  role        = postgresql_role.app.name
-  schema      = "public"
-  object_type = "schema"
-  privileges  = ["USAGE"]
-}
+# resource "postgresql_grant" "dbost_app" {
+#   database    = "postgres"
+#   role        = postgresql_role.app.name
+#   schema      = "public"
+#   object_type = "schema"
+#   privileges  = ["USAGE"]
+# }
 
-resource "postgresql_grant" "dbost_migrator" {
-  database    = "postgres"
-  role        = postgresql_role.migrator.name
-  schema      = "public"
-  object_type = "schema"
-  privileges  = ["USAGE", "CREATE"]
-}
+# resource "postgresql_grant" "dbost_migrator" {
+#   database    = "postgres"
+#   role        = postgresql_role.migrator.name
+#   schema      = "public"
+#   object_type = "schema"
+#   privileges  = ["USAGE", "CREATE"]
+# }
 
 resource "aws_secretsmanager_secret" "db_master_password" {
   name = "dbost_db_master_password"
