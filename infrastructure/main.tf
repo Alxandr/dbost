@@ -105,6 +105,9 @@ resource "aws_db_instance" "dbost_db" {
   parameter_group_name   = aws_db_parameter_group.dbost_db.name
   skip_final_snapshot    = true
   storage_encrypted      = true
+
+  # TODO: remove
+  publicly_accessible = true
 }
 
 resource "random_password" "db_password" {
@@ -120,6 +123,7 @@ resource "postgresql_role" "db_role" {
   encrypted_password = true
 
   depends_on = [
+    module.vpc,
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
     aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress
