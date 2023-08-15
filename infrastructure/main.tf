@@ -150,14 +150,6 @@ resource "postgresql_schema" "dbost" {
   name = "dbost"
 }
 
-resource "postgresql_grant" "revoke_public" {
-  database    = aws_db_instance.dbost_db.db_name
-  role        = "public"
-  schema      = "public"
-  object_type = "schema"
-  privileges  = []
-}
-
 resource "postgresql_grant" "dbost_app" {
   database    = aws_db_instance.dbost_db.db_name
   role        = postgresql_role.app.name
