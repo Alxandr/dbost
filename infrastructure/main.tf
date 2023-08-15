@@ -1,3 +1,5 @@
+data "spacelift_ips" "ips" {}
+
 data "aws_availability_zones" "available" {
   # Only Availability Zones (no Local Zones):
   filter {
@@ -7,8 +9,9 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
-  vpc_cidr = "10.0.0.0/16"
+  azs           = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_cidr      = "10.0.0.0/16"
+  spacelift_ips = tolist(data.spacelift_ips.ips.ips)
 }
 
 module "vpc" {
@@ -41,7 +44,6 @@ module "vpc" {
   single_nat_gateway = true
 }
 
-data "spacelift_ips" "ips" {}
 
 resource "aws_security_group" "dbost_db" {
   name_prefix = "dbost-rds"
@@ -67,13 +69,13 @@ resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
-  count = length(data.spacelift_ips.ips.ips)
+  count = length(local.spacelift_ips)
 
   description       = "TLS from spacelift"
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
-  cidr_ipv4         = data.spacelift_ips.ips.ips[count.index]
+  cidr_ipv4         = local.spacelift_ips[count.index]
   security_group_id = aws_security_group.dbost_db.id
 }
 
