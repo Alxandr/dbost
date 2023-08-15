@@ -33,6 +33,7 @@ module "vpc" {
   # enable_dns_support   = true
 
   # TODO: Figure this shit out
+  create_database_subnet_route_table     = true
   create_database_internet_gateway_route = true
 
   create_database_subnet_group  = true
