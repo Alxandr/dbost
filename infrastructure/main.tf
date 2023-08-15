@@ -64,6 +64,15 @@ resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
   security_group_id = aws_security_group.dbost_db.id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "dbost_db_all_ingress" {
+  description       = "TLS from anywhere"
+  from_port         = 5432
+  to_port           = 5432
+  ip_protocol       = "tcp"
+  cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = aws_security_group.dbost_db.id
+}
+
 resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
   count = length(local.spacelift_ips)
 
@@ -126,7 +135,8 @@ resource "postgresql_role" "db_role" {
     module.vpc,
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
-    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress
+    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress,
+    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
   ]
 }
 
