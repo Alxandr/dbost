@@ -41,7 +41,7 @@ module "vpc" {
   single_nat_gateway = true
 }
 
-resource "aws_security_group" "rds" {
+resource "aws_security_group" "dbost_db" {
   name_prefix = "dbost-rds"
   description = "Allow PostgreSQL inbound traffic"
   vpc_id      = module.vpc.vpc_id
@@ -61,17 +61,30 @@ resource "random_password" "db_master_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
+resource "aws_db_parameter_group" "dbost_db" {
+  name   = "dbost"
+  family = "postgres15"
+
+  parameter {
+    name  = "log_connections"
+    value = "1"
+  }
+}
+
 resource "aws_db_instance" "dbost_db" {
-  allocated_storage   = 20
-  db_name             = "dbost"
-  engine              = "postgres"
-  engine_version      = "15.3"
-  identifier          = "dbost"
-  instance_class      = "db.t4g.micro"
-  username            = "dbost_master"
-  password            = random_password.db_master_password.result
-  skip_final_snapshot = true
-  storage_encrypted   = true
+  allocated_storage      = 5
+  db_name                = "dbost"
+  engine                 = "postgres"
+  engine_version         = "15.3"
+  identifier             = "dbost"
+  instance_class         = "db.t4g.micro"
+  username               = "dbost_master"
+  password               = random_password.db_master_password.result
+  db_subnet_group_name   = module.vpc.database_subnet_group_name
+  vpc_security_group_ids = [aws_security_group.dbost_db.id]
+  parameter_group_name   = aws_db_parameter_group.dbost_db.name
+  skip_final_snapshot    = true
+  storage_encrypted      = true
 }
 
 resource "random_password" "db_password" {
