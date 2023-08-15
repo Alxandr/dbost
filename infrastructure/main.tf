@@ -7,16 +7,18 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  azs = slice(data.aws_availability_zones.available.names, 0, 3)
+  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_cidr = "10.0.0.0/16"
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.1"
 
-  name             = "dBost"
-  cidr             = "10.0.0.0/16"
-  azs              = local.azs
+  name = "dBost"
+  cidr = local.vpc_cidr
+  azs  = local.azs
+
   private_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
   public_subnets   = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 4)]
   database_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 8)]
