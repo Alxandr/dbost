@@ -18,7 +18,8 @@ provider "postgresql" {
   superuser       = false
   sslmode         = "require"
   connect_timeout = 60
-  # scheme           = "awspostgres"
+
+  scheme = "awspostgres"
   # aws_rds_iam_auth = true
 }
 
