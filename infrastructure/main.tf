@@ -48,14 +48,34 @@ resource "aws_security_group" "dbost_db" {
   description = "Allow PostgreSQL inbound traffic"
   vpc_id      = module.vpc.vpc_id
 
-  ingress {
-    description = "TLS from VPC"
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = concat([module.vpc.vpc_cidr_block], data.spacelift_ips.ips.ips)
-  }
+  # ingress {
+  #   description = "TLS from VPC"
+  #   from_port   = 5432
+  #   to_port     = 5432
+  #   protocol    = "tcp"
+  #   cidr_blocks = concat([module.vpc.vpc_cidr_block], data.spacelift_ips.ips.ips)
+  # }
 }
+
+resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
+  security_group_id = aws_security_group.dbost_db.id
+
+  description = "TLS from VPC"
+  from_port   = 5432
+  to_port     = 5432
+  ip_protocol = "tcp"
+  cidr_ipv4   = module.vpc.vpc_cidr_block
+}
+
+# resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
+#   security_group_id = aws_security_group.dbost_db.id
+
+#   description = "TLS from spacelift"
+#   from_port   = 5432
+#   to_port     = 5432
+#   ip_protocol = "tcp"
+#   cidr_ipv4   = module.vpc.vpc_cidr_block
+# }
 
 resource "random_password" "db_master_password" {
   length           = 32
