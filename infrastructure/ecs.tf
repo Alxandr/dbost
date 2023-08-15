@@ -8,7 +8,7 @@ resource "aws_ecs_task_definition" "dbost-db-migrator" {
   family                   = "dbost-db-migrator"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 1
+  cpu                      = 512
   memory                   = 1024
   container_definitions = jsonencode([{
     name   = "dbost-db-migrator"
