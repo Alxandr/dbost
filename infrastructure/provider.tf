@@ -10,7 +10,7 @@ provider "aws" {
 
 
 provider "postgresql" {
-  database        = aws_db_instance.dbost_db.db_name
+  database        = "postgres"
   host            = aws_db_instance.dbost_db.address
   port            = aws_db_instance.dbost_db.port
   username        = aws_db_instance.dbost_db.username

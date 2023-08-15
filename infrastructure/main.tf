@@ -151,7 +151,7 @@ resource "postgresql_schema" "dbost" {
 }
 
 resource "postgresql_grant" "dbost_app" {
-  database    = aws_db_instance.dbost_db.db_name
+  database    = "postgres"
   role        = postgresql_role.app.name
   schema      = postgresql_schema.dbost.name
   object_type = "schema"
@@ -159,11 +159,19 @@ resource "postgresql_grant" "dbost_app" {
 }
 
 resource "postgresql_grant" "dbost_migrator" {
-  database    = aws_db_instance.dbost_db.db_name
+  database    = "postgres"
   role        = postgresql_role.migrator.name
   schema      = postgresql_schema.dbost.name
   object_type = "schema"
   privileges  = ["USAGE", "CREATE"]
+}
+
+resource "postgresql_grant" "revoke_public" {
+  database    = "postgres"
+  role        = "public"
+  schema      = "public"
+  object_type = "schema"
+  privileges  = []
 }
 
 resource "aws_secretsmanager_secret" "db_master_password" {
