@@ -128,7 +128,6 @@ resource "postgresql_role" "app" {
     module.vpc,
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
-    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress,
     aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
   ]
 }
@@ -143,7 +142,6 @@ resource "postgresql_role" "migrator" {
     module.vpc,
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
-    aws_vpc_security_group_ingress_rule.dbost_db_spacelift_ingress,
     aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
   ]
 }
@@ -153,7 +151,7 @@ resource "postgresql_schema" "dbost" {
   owner = aws_db_instance.dbost_db.username
 
   policy {
-    role  = postgresql_role.db_role.name
+    role  = postgresql_role.app.name
     usage = true
   }
 
