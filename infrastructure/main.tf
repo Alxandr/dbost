@@ -58,24 +58,24 @@ resource "aws_security_group" "dbost_db" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "dbost_db_vpc_ingress" {
+  description       = "TLS from VPC"
+  from_port         = 5432
+  to_port           = 5432
+  ip_protocol       = "tcp"
+  cidr_ipv4         = module.vpc.vpc_cidr_block
   security_group_id = aws_security_group.dbost_db.id
-
-  description = "TLS from VPC"
-  from_port   = 5432
-  to_port     = 5432
-  ip_protocol = "tcp"
-  cidr_ipv4   = module.vpc.vpc_cidr_block
 }
 
-# resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
-#   security_group_id = aws_security_group.dbost_db.id
+resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
+  count = length(data.spacelift_ips.ips.ips)
 
-#   description = "TLS from spacelift"
-#   from_port   = 5432
-#   to_port     = 5432
-#   ip_protocol = "tcp"
-#   cidr_ipv4   = module.vpc.vpc_cidr_block
-# }
+  description       = "TLS from spacelift"
+  from_port         = 5432
+  to_port           = 5432
+  ip_protocol       = "tcp"
+  cidr_ipv4         = data.spacelift_ips.ips.ips[count.index]
+  security_group_id = aws_security_group.dbost_db.id
+}
 
 resource "random_password" "db_master_password" {
   length           = 32
