@@ -1,4 +1,4 @@
 output "database_endpoint" {
-  type  = string
-  value = aws_db_instance.dbost_db.endpoint
+  description = "The endpoint of the database"
+  value       = aws_db_instance.dbost_db.endpoint
 }
