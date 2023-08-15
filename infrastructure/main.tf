@@ -42,7 +42,7 @@ module "vpc" {
 }
 
 resource "aws_security_group" "rds" {
-  name_prefix = "${local.name}-rds"
+  name_prefix = "dbost-rds"
   description = "Allow PostgreSQL inbound traffic"
   vpc_id      = module.vpc.vpc_id
 
