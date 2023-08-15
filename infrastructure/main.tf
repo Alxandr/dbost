@@ -72,7 +72,7 @@ resource "aws_db_parameter_group" "dbost_db" {
 }
 
 resource "aws_db_instance" "dbost_db" {
-  allocated_storage      = 5
+  allocated_storage      = 10
   db_name                = "dbost"
   engine                 = "postgres"
   engine_version         = "15.3"
