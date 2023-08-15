@@ -6,7 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.6.20", default-features = false }
-remove = "0.1.3"
 sea-orm = { version = "0.12.2", default-features = false }
 time = { version = "0.3.25", default-features = false }

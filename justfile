@@ -1,3 +1,5 @@
+set dotenv-load
+
 entities-proj   := "domain/entities"
 migrations-proj := "domain/migrations"
 
@@ -5,9 +7,13 @@ migrations-proj := "domain/migrations"
 @list:
 	just --list
 
+# build everything on depot
+bake:
+	depot bake
+
 # start dev server
 run: build-css
-	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG,sqlx=DEBUG" cargo shuttle run
+	RUST_LOG="INFO,dbost_session=DEBUG,dbost=DEBUG,sqlx=DEBUG" cargo run
 
 # build for production
 build: build-css

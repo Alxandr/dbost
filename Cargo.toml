@@ -1,7 +1,6 @@
 [workspace]
 members = [
 	".",
-	"lib/shuttle-sea-orm",
 	"lib/axum-healthcheck",
 	"lib/tvdb-client",
 	"lib/session",
@@ -9,6 +8,8 @@ members = [
 	"domain/entities",
 	"domain/migrations",
 	"domain/services",
+	"jobs/db-cleanup",
+	"jobs/seed",
 ]
 
 [package]
@@ -21,7 +22,6 @@ async-trait = "0.1.73"
 axum = { version = "0.6.19", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
 dbost-entities = { version = "0.0.0", path = "./domain/entities" }
-dbost-migration = { version = "0.0.0", path = "./domain/migrations" }
 dbost-services = { version = "0.0.0", path = "./domain/services" }
 dbost-session = { version = "0.0.0", path = "./lib/session" }
 dbost-utils = { version = "0.0.0", path = "./lib/utils" }
@@ -45,15 +45,14 @@ sea-query = { version = "0.30.0", default-features = false, features = [
 ] }
 serde = { version = "1.0.178", features = ["derive"] }
 serde_urlencoded = { version = "0.7.1", default-features = false }
-shuttle-axum = "0.23.0"
-shuttle-runtime = "0.23.0"
-shuttle-sea-orm = { version = "0.0.0", path = "./lib/shuttle-sea-orm" }
-shuttle-secrets = "0.23.0"
-shuttle-static-folder = "0.23.0"
 static_assertions = "1.1.0"
 thiserror = "1.0.44"
 time = { version = "0.3.25", default-features = false, features = ["std"] }
-tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.29.1", features = [
+	"macros",
+	"rt-multi-thread",
+	"signal",
+] }
 tokio-util = { version = "0.7.8", default-features = false }
 tower = { version = "0.4.13", default-features = false }
 tower-http = { version = "0.4.3", features = [
@@ -63,8 +62,23 @@ tower-http = { version = "0.4.3", features = [
 	"auth",
 	"fs",
 ] }
-tower-livereload = "0.8.0"
+tower-livereload = { version = "0.8.0", optional = true }
 tracing = "0.1.37"
+tracing-forest = { version = "0.1.6", default-features = false, features = [
+	"tokio",
+	"uuid",
+	"serde",
+	"env-filter",
+	"ansi",
+	"smallvec",
+] }
 tvdb-client = { version = "0.0.0", path = "./lib/tvdb-client" }
 url = "2.4.0"
 uuid = { version = "1.4.1", features = ["serde"] }
+
+[features]
+default = []
+live-reload = ["tower-livereload"]
+
+[profile.release]
+lto = "thin"

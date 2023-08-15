@@ -146,22 +146,10 @@ resource "postgresql_role" "migrator" {
   ]
 }
 
-resource "postgresql_schema" "dbost" {
-  name  = "dbost"
-  owner = aws_db_instance.dbost_db.username
-
-  depends_on = [
-    module.vpc,
-    aws_db_instance.dbost_db,
-    aws_security_group.dbost_db,
-    aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
-  ]
-}
-
 resource "postgresql_grant" "dbost_app" {
   database    = "postgres"
   role        = postgresql_role.app.name
-  schema      = postgresql_schema.dbost.name
+  schema      = "public"
   object_type = "schema"
   privileges  = ["USAGE"]
 }
@@ -169,7 +157,7 @@ resource "postgresql_grant" "dbost_app" {
 resource "postgresql_grant" "dbost_migrator" {
   database    = "postgres"
   role        = postgresql_role.migrator.name
-  schema      = postgresql_schema.dbost.name
+  schema      = "public"
   object_type = "schema"
   privileges  = ["USAGE", "CREATE"]
 }

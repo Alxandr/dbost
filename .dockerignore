@@ -1,0 +1,5 @@
+target/
+infrastructure/
+node_modules/
+public/
+.git/
