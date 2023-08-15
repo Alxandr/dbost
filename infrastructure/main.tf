@@ -29,7 +29,7 @@ module "vpc" {
   # enable_dns_hostnames = true
   # enable_dns_support   = true
 
-  create_database_subnet_group  = false
+  create_database_subnet_group  = true
   manage_default_network_acl    = false
   manage_default_route_table    = false
   manage_default_security_group = false
@@ -53,8 +53,6 @@ resource "aws_security_group" "rds" {
     protocol    = "tcp"
     cidr_blocks = [module.vpc.vpc_cidr_block]
   }
-
-  tags = local.tags
 }
 
 resource "random_password" "db_master_password" {
