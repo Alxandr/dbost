@@ -17,7 +17,7 @@ provider "postgresql" {
   password        = random_password.db_master_password.result
   superuser       = false
   sslmode         = "require"
-  connect_timeout = 15
+  connect_timeout = 60
   # scheme           = "awspostgres"
   # aws_rds_iam_auth = true
 }
