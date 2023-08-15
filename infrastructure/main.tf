@@ -32,6 +32,9 @@ module "vpc" {
   # enable_dns_hostnames = true
   # enable_dns_support   = true
 
+  # TODO: Figure this shit out
+  create_database_internet_gateway_route = true
+
   create_database_subnet_group  = true
   manage_default_network_acl    = false
   manage_default_route_table    = false
