@@ -11,6 +11,12 @@ locals {
   vpc_cidr = "10.0.0.0/16"
 }
 
+###################################################################################
+#
+# NETWORKING
+#
+###################################################################################
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.1"
@@ -45,6 +51,9 @@ module "vpc" {
   single_nat_gateway = true
 }
 
+#################
+# DB networking
+#################
 
 resource "aws_security_group" "dbost_db" {
   name_prefix = "dbost-rds"
@@ -70,6 +79,80 @@ resource "aws_vpc_security_group_ingress_rule" "dbost_db_all_ingress" {
   cidr_ipv4         = "0.0.0.0/0"
   security_group_id = aws_security_group.dbost_db.id
 }
+
+#################
+# public networking
+#################
+
+resource "aws_security_group" "public" {
+  name        = "Allow public HTTP/HTTPS ALB"
+  description = "Public internet access"
+  vpc_id      = module.vpc.vpc_id
+}
+
+resource "aws_security_group_rule" "public_out" {
+  type        = "egress"
+  from_port   = 0
+  to_port     = 0
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.public.id
+}
+
+resource "aws_security_group_rule" "public_in_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+}
+
+resource "aws_security_group_rule" "public_in_https" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.public.id
+}
+
+#################
+# ECS networking
+#################
+
+resource "aws_security_group" "ec2_ecs_instance" {
+  name        = "Allow internal VPC traffic"
+  description = "Allow internal VPC traffic"
+  vpc_id      = module.vpc.vpc_id
+
+}
+
+resource "aws_security_group_rule" "allow_internal_VPC_traffic" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = [local.vpc_cidr]
+  security_group_id = aws_security_group.ec2_ecs_instance.id
+}
+
+resource "aws_security_group_rule" "public_out_ec2" {
+  type        = "egress"
+  from_port   = 0
+  to_port     = 0
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.ec2_ecs_instance.id
+}
+
+###################################################################################
+#
+# DATABASE
+#
+###################################################################################
 
 resource "random_password" "db_master_password" {
   length           = 32
