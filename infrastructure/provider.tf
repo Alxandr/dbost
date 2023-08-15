@@ -18,3 +18,5 @@ provider "postgresql" {
   aws_rds_iam_auth = true
   superuser        = false
 }
+
+provider "spacelift" {}

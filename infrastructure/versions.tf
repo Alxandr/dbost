@@ -7,12 +7,17 @@ terraform {
 
     postgresql = {
       source  = "cyrilgdn/postgresql"
-      version = "1.20.0"
+      version = "~> 1.20"
     }
 
     random = {
       source  = "hashicorp/random"
-      version = "3.5.1"
+      version = "~> 3.5"
+    }
+
+    spacelift = {
+      source  = "spacelift-io/spacelift"
+      version = "~> 1.1"
     }
   }
 

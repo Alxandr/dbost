@@ -41,6 +41,8 @@ module "vpc" {
   single_nat_gateway = true
 }
 
+data "spacelift_ips" "ips" {}
+
 resource "aws_security_group" "dbost_db" {
   name_prefix = "dbost-rds"
   description = "Allow PostgreSQL inbound traffic"
@@ -51,7 +53,7 @@ resource "aws_security_group" "dbost_db" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [module.vpc.vpc_cidr_block]
+    cidr_blocks = concat([module.vpc.vpc_cidr_block], data.spacelift_ips.ips.ips)
   }
 }
 
