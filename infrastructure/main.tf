@@ -75,7 +75,7 @@ resource "aws_vpc_security_group_ingress_rule" "dbost_db_spacelift_ingress" {
   from_port         = 5432
   to_port           = 5432
   ip_protocol       = "tcp"
-  cidr_ipv4         = local.spacelift_ips[count.index]
+  cidr_ipv4         = "${local.spacelift_ips[count.index]}/32" # single address cidr
   security_group_id = aws_security_group.dbost_db.id
 }
 
