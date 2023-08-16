@@ -120,12 +120,12 @@ resource "aws_secretsmanager_secret" "db_app" {
 resource "aws_secretsmanager_secret_version" "db_app" {
   secret_id = aws_secretsmanager_secret.db_app.id
   secret_string = jsonencode({
-    username          = postgresql_role.app.username
+    username          = postgresql_role.app.name
     password          = postgresql_role.app.password
     address           = aws_db_instance.dbost_db.address
     endpoint          = aws_db_instance.dbost_db.endpoint
     database          = "postgres"
-    connection_string = "postgres://${postgresql_role.app.username}:${postgresql_role.app.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
+    connection_string = "postgres://${postgresql_role.app.name}:${postgresql_role.app.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
   })
 }
 
@@ -136,11 +136,11 @@ resource "aws_secretsmanager_secret" "db_migrator" {
 resource "aws_secretsmanager_secret_version" "db_migrator" {
   secret_id = aws_secretsmanager_secret.db_migrator.id
   secret_string = jsonencode({
-    username          = postgresql_role.migrator.username
+    username          = postgresql_role.migrator.name
     password          = postgresql_role.migrator.password
     address           = aws_db_instance.dbost_db.address
     endpoint          = aws_db_instance.dbost_db.endpoint
     database          = "postgres"
-    connection_string = "postgres://${postgresql_role.migrator.username}:${postgresql_role.migrator.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
+    connection_string = "postgres://${postgresql_role.migrator.name}:${postgresql_role.migrator.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
   })
 }
