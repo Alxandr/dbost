@@ -97,11 +97,50 @@ resource "postgresql_role" "migrator" {
 #   privileges  = ["USAGE", "CREATE"]
 # }
 
-resource "aws_secretsmanager_secret" "db_master_password" {
-  name = "dbost_db_master_password"
+resource "aws_secretsmanager_secret" "db_master" {
+  name = "dbost_db_master"
 }
 
-resource "aws_secretsmanager_secret_version" "db_master_password" {
-  secret_id     = aws_secretsmanager_secret.db_master_password.id
-  secret_string = random_password.db_master_password.result
+resource "aws_secretsmanager_secret_version" "db_master" {
+  secret_id = aws_secretsmanager_secret.db_master.id
+  secret_string = jsonencode({
+    username          = aws_db_instance.dbost_db.username
+    password          = random_password.db_master_password.result
+    address           = aws_db_instance.dbost_db.address
+    endpoint          = aws_db_instance.dbost_db.endpoint
+    database          = "postgres"
+    connection_string = "postgres://${aws_db_instance.dbost_db.username}:${random_password.db_master_password.result}@${aws_db_instance.dbost_db.endpoint}/postgres"
+  })
+}
+
+resource "aws_secretsmanager_secret" "db_app" {
+  name = "dbost_db_app"
+}
+
+resource "aws_secretsmanager_secret_version" "db_app" {
+  secret_id = aws_secretsmanager_secret.db_app.id
+  secret_string = jsonencode({
+    username          = postgresql_role.app.username
+    password          = postgresql_role.app.password
+    address           = aws_db_instance.dbost_db.address
+    endpoint          = aws_db_instance.dbost_db.endpoint
+    database          = "postgres"
+    connection_string = "postgres://${postgresql_role.app.username}:${postgresql_role.app.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
+  })
+}
+
+resource "aws_secretsmanager_secret" "db_migrator" {
+  name = "dbost_db_migrator"
+}
+
+resource "aws_secretsmanager_secret_version" "db_migrator" {
+  secret_id = aws_secretsmanager_secret.db_migrator.id
+  secret_string = jsonencode({
+    username          = postgresql_role.migrator.username
+    password          = postgresql_role.migrator.password
+    address           = aws_db_instance.dbost_db.address
+    endpoint          = aws_db_instance.dbost_db.endpoint
+    database          = "postgres"
+    connection_string = "postgres://${postgresql_role.migrator.username}:${postgresql_role.migrator.password}@${aws_db_instance.dbost_db.endpoint}/postgres"
+  })
 }
