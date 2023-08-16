@@ -11,6 +11,7 @@ resource "aws_ecs_task_definition" "dbost" {
   cpu                      = 512
   memory                   = 1024
   execution_role_arn       = aws_iam_role.ecs_agent.arn
+  depends_on               = []
   container_definitions = jsonencode([
     {
       name                   = "dbost-db-migrator"
@@ -106,6 +107,11 @@ resource "aws_ecs_service" "dbost" {
   name            = "dbost"                           # Name of service
   task_definition = aws_ecs_task_definition.dbost.arn # Attach the task to service
 
+  network_configuration {
+    subnets          = module.vpc.public_subnets
+    security_groups  = [aws_security_group.public.id]
+    assign_public_ip = true
+  }
   # load_balancer {
   #   container_name   = "folderit-webservice"
   #   container_port   = "80"
