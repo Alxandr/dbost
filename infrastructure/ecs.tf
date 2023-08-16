@@ -10,6 +10,7 @@ resource "aws_ecs_task_definition" "dbost" {
   network_mode             = "awsvpc"
   cpu                      = 512
   memory                   = 1024
+  execution_role_arn       = aws_iam_role.ecs_agent.arn
   container_definitions = jsonencode([
     {
       name                   = "dbost-db-migrator"
@@ -99,13 +100,13 @@ resource "aws_ecs_task_definition" "dbost" {
 
 ##### AWS ECS-SERVICE #####
 resource "aws_ecs_service" "dbost" {
-  cluster         = aws_ecs_cluster.cluster.id                  # ECS Cluster ID
-  desired_count   = 1                                           # Number of tasks running
-  launch_type     = "FARGATE"                                   # Cluster type [ECS OR FARGATE]
-  name            = "dbost"                                     # Name of service
-  task_definition = aws_ecs_task_definition.dbost.arn           # Attach the task to service
+  cluster         = aws_ecs_cluster.cluster.id        # ECS Cluster ID
+  desired_count   = 1                                 # Number of tasks running
+  launch_type     = "FARGATE"                         # Cluster type [ECS OR FARGATE]
+  name            = "dbost"                           # Name of service
+  task_definition = aws_ecs_task_definition.dbost.arn # Attach the task to service
 
-	# load_balancer {
+  # load_balancer {
   #   container_name   = "folderit-webservice"
   #   container_port   = "80"
   #   target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.arn
