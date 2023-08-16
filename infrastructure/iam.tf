@@ -30,6 +30,15 @@ data "aws_iam_policy_document" "ecs_agent" {
       identifiers = ["ec2.amazonaws.com"]
     }
   }
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_iam_role" "ecs_agent" {
