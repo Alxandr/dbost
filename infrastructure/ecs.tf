@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "dbost" {
         options = {
           awslogs-create-group  = "true"
           awslogs-group         = "dbost"
-          awslogs-region        = provider.aws.regsion
+          awslogs-region        = var.region
           awslogs-stream-prefix = "migrator"
         }
       }
@@ -109,7 +109,7 @@ resource "aws_ecs_task_definition" "dbost" {
         options = {
           awslogs-create-group  = "true"
           awslogs-group         = "dbost"
-          awslogs-region        = provider.aws.regsion
+          awslogs-region        = var.region
           awslogs-stream-prefix = "web"
         }
       }
