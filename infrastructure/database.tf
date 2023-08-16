@@ -1,5 +1,3 @@
-
-
 ###################################################################################
 #
 # DATABASE
@@ -96,6 +94,12 @@ resource "postgresql_role" "migrator" {
 #   object_type = "schema"
 #   privileges  = ["USAGE", "CREATE"]
 # }
+
+###################################################################################
+#
+# DATABASE SECRETS
+#
+###################################################################################
 
 resource "aws_secretsmanager_secret" "db_master" {
   name = "dbost_db_master"
