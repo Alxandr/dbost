@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 dbost-entities = { version = "0.0.0", path = "../../domain/entities" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
-sea-orm = { version = "0.12.1", features = [
+sea-orm = { version = "0.12.2", features = [
 	"sqlx-postgres",
 	"runtime-tokio-native-tls",
 	"with-uuid",
