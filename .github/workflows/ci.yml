@@ -1,6 +1,9 @@
 name: Build image
 
 on:
+  pull_request:
+    branches:  
+      - main
   push:
     branches:
       - main
@@ -29,6 +32,5 @@ jobs:
       - name: Build and push
         uses: depot/bake-action@v1
         with:
-          # if no depot.json file is at the root of your repo, you must specify the project id
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
           files: docker-bake.hcl
