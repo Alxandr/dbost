@@ -11,7 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 uuid = "1.4.1"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
-sea-orm-migration = { version = "0.12.1", features = [
+sea-orm-migration = { version = "0.12.2", features = [
 	"sqlx-postgres",
 	"runtime-tokio-native-tls",
 	"with-uuid",
