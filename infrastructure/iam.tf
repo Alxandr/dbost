@@ -72,7 +72,7 @@ resource "aws_iam_policy" "ecs_agent_read_secrets" {
   policy      = data.aws_iam_policy_document.ecs_agent_read_secrets.json
 }
 
-resource "aws_iam_role_policy_attachment" "test-attach" {
+resource "aws_iam_role_policy_attachment" "ecs_agent_read_secrets" {
   role       = aws_iam_role.ecs_agent.name
   policy_arn = aws_iam_policy.ecs_agent_read_secrets.arn
 }
