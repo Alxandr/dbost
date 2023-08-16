@@ -35,6 +35,15 @@ resource "aws_ecs_task_definition" "dbost" {
           valueFrom = "${aws_secretsmanager_secret.db_migrator.arn}:connection_string::"
         },
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-create-group  = "true"
+          awslogs-group         = "dbost"
+          awslogs-region        = provider.aws.regsion
+          awslogs-stream-prefix = "migrator"
+        }
+      }
     },
     {
       name                   = "dbost"
@@ -95,6 +104,15 @@ resource "aws_ecs_task_definition" "dbost" {
           valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:user_pin::"
         },
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-create-group  = "true"
+          awslogs-group         = "dbost"
+          awslogs-region        = provider.aws.regsion
+          awslogs-stream-prefix = "web"
+        }
+      }
     }
   ])
 }
