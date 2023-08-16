@@ -47,18 +47,20 @@ ARG BIN_NAME
 ARG PACKAGE
 RUN cargo build --release --bin "${BIN_NAME}" --package "${PACKAGE}"
 
-FROM docker.io/debian:buster-slim AS runtime
-RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/*
+FROM docker.io/debian:stable-slim AS runtime
+RUN apt-get update && apt-get install -y curl ca-certificates tini && rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # We do not need the Rust toolchain to run the binary!
 FROM runtime as job
 ARG BIN_NAME
 ARG PACKAGE
+ENV BIN_NAME=${BIN_NAME}
 COPY --from=builder-job "/app/target/release/${BIN_NAME}" /usr/local/bin
-ENTRYPOINT ["/usr/local/bin/${BIN_NAME}"]
+CMD ["sh", "-c", "/usr/local/bin/${BIN_NAME}"]
 
 FROM runtime as web
 COPY --from=builder-web /app/target/release/dbost /usr/local/bin
 COPY --from=client-builder /app/public /var/www/public
 ENV WEB_PUBLIC_PATH=/var/www/public
-ENTRYPOINT ["/usr/local/bin/dbost"]
+CMD ["/usr/local/bin/dbost"]
