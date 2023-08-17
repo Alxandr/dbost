@@ -10,12 +10,11 @@ provider "aws" {
 
 
 provider "postgresql" {
-  database = "postgres"
-  host     = aws_db_instance.dbost_db.address
-  port     = aws_db_instance.dbost_db.port
-  username = aws_db_instance.dbost_db.username
-  # password        = random_password.db_master_password.result
-  password        = "&D[WuaCn0biL2f[{0B?PzE}P<J#Plx8x"
+  database        = "postgres"
+  host            = aws_db_instance.dbost_db.address
+  port            = aws_db_instance.dbost_db.port
+  username        = aws_db_instance.dbost_db.username
+  password        = random_password.db_master_password.result
   superuser       = false
   sslmode         = "require"
   connect_timeout = 60
