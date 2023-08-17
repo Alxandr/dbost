@@ -150,9 +150,9 @@ resource "aws_ecs_service" "dbost" {
     assign_public_ip = true
   }
 
-  # load_balancer {
-  #   container_name   = "folderit-webservice"
-  #   container_port   = "80"
-  #   target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.arn
-  # }
+  load_balancer {
+    container_name   = "dbost"
+    container_port   = "8000"
+    target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.arn
+  }
 }
