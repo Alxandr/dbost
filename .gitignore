@@ -1,5 +1,4 @@
 /target
 /node_modules
-/public
 Secrets*.toml
 .env*

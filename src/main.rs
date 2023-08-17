@@ -165,7 +165,7 @@ async fn axum() -> ! {
 			state.db.clone(),
 		)))
 		.with_state(state)
-		.nest_service("/public", ServeDir::new(web_public_path));
+		.fallback_service(ServeDir::new(web_public_path));
 
 	#[cfg(feature = "live-reload")]
 	{
