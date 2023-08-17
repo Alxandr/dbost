@@ -10,6 +10,8 @@ target "_base" {
 	dockerfile = "Dockerfile"
 	platforms = ["linux/amd64"]
 	// platforms = ["linux/amd64", "linux/arm64"]
+	cache-from = ["type=gha", "type=gha,scope=main"]
+	cache-to = ["type=gha,mode=max"]
 }
 
 target "web" {
