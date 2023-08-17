@@ -67,7 +67,7 @@ resource "aws_acm_certificate" "ssl_certificate" {
   domain_name               = var.domain_name
   subject_alternative_names = ["*.${var.domain_name}"]
   validation_method         = "DNS"
-  key_algorithm             = "EC_secp521r1"
+  key_algorithm             = "EC_secp384r1"
 
   lifecycle {
     create_before_destroy = true
