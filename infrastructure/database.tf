@@ -85,6 +85,16 @@ resource "postgresql_role" "migrator" {
   ]
 }
 
+resource "postgresql_default_privileges" "dbost_app" {
+  role     = postgresql_role.app.name
+  database = "postgres"
+  schema   = "public"
+
+  owner       = postgresql_role.migrator
+  object_type = "table"
+  privileges  = ["SELECT", "INSERT", "UPDATE", "DELETE"]
+}
+
 # resource "postgresql_grant" "dbost_app" {
 #   database    = "postgres"
 #   role        = postgresql_role.app.name
