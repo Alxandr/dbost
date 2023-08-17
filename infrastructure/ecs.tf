@@ -19,6 +19,7 @@ resource "aws_ecs_task_definition" "dbost" {
       essential              = false
       readonlyRootFilesystem = true
       memory                 = 1024
+
       environment = [
         {
           name  = "DATABASE_SCHEMA"
@@ -35,6 +36,7 @@ resource "aws_ecs_task_definition" "dbost" {
           valueFrom = "${aws_secretsmanager_secret.db_migrator.arn}:connection_string::${aws_secretsmanager_secret_version.db_migrator.version_id}"
         },
       ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -50,12 +52,22 @@ resource "aws_ecs_task_definition" "dbost" {
       image                  = "ghcr.io/alxandr/dbost:latest"
       readonlyRootFilesystem = true
       memory                 = 1024
+
+      portMappings = [
+        {
+          appProtocol   = "http2"
+          containerPort = 8000
+          name          = "www"
+        }
+      ]
+
       dependsOn = [
         {
           containerName = "dbost-db-migrator"
           condition     = "SUCCESS"
         }
       ]
+
       environment = [
         {
           name  = "DATABASE_SCHEMA"
@@ -74,6 +86,7 @@ resource "aws_ecs_task_definition" "dbost" {
           value = "https://dbost.tv/"
         },
       ]
+
       secrets = [
         {
           name      = "DATABASE_URL"
@@ -104,6 +117,7 @@ resource "aws_ecs_task_definition" "dbost" {
           valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:user_pin::${data.aws_secretsmanager_secret_version.tvdb.version_id}"
         },
       ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
