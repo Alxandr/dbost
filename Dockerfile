@@ -72,9 +72,9 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 # AWS DEPLOY JOB
 FROM runtime as deployer
 ARG VERSION="latest"
-ENV VERSION=${VERSION}
+ENV TAG=${VERSION}
 COPY --from=builder "/app/target/release/dbost-jobs-deploy" /usr/local/bin
-CMD ["sh", "-c", "/usr/local/bin/dbost-jobs-deploy --tag \"${VERSION}\""]
+CMD ["sh", "-c", "/usr/local/bin/dbost-jobs-deploy"]
 
 # DB MIGRATOR JOB IMAGE
 FROM runtime as migrator
