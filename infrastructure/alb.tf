@@ -61,6 +61,9 @@ resource "aws_lb_listener" "lb_listener-webservice-https" {
   }
 
   depends_on = [aws_acm_certificate_validation.cert_validation]
+  lifecycle {
+    replace_triggered_by = [aws_alb_target_group.alb_public_webservice_target_group]
+  }
 }
 
 # SSL Certificate
