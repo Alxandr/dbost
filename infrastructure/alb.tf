@@ -58,6 +58,8 @@ resource "aws_lb_listener" "lb_listener-webservice-https" {
     type             = "forward"
     target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.id
   }
+
+  depends_on = [aws_acm_certificate_validation.cert_validation]
 }
 
 # SSL Certificate
@@ -65,6 +67,7 @@ resource "aws_acm_certificate" "ssl_certificate" {
   domain_name               = var.domain_name
   subject_alternative_names = ["*.${var.domain_name}"]
   validation_method         = "DNS"
+  key_algorithm             = "EC_secp521r1"
 
   lifecycle {
     create_before_destroy = true
@@ -94,14 +97,22 @@ resource "aws_route53_record" "www" {
   }
 }
 
-# resource "aws_route53_record" "hello_cert_dns" {
-#   allow_overwrite = true
-#   name            = tolist(aws_acm_certificate.ssl_certificate.domain_validation_options)[0].resource_record_name
-#   records         = [tolist(aws_acm_certificate.ssl_certificate.domain_validation_options)[0].resource_record_value]
-#   type            = tolist(aws_acm_certificate.ssl_certificate.domain_validation_options)[0].resource_record_type
-#   zone_id         = var.r53_zone_id
-#   ttl             = 60
-# }
+resource "aws_route53_record" "cert_dns_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.ssl_certificate.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = aws_route53_zone.dbost.zone_id
+}
 
 ### DNSIMPLE domain delegation ###
 # Create a domain delegation
