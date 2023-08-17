@@ -48,3 +48,11 @@ generate-entities:
 # run migrations
 migrate +cmd:
 	sea-orm-cli migrate -d {{migrations-proj}} {{cmd}}
+
+# build image using podman
+podman-build:
+	podman build . -t localhost/alxandr/dbost
+
+# run image using podman
+podman-run:
+	podman run --rm -it -p 8000:8000 --env-host --env WEB_PUBLIC_PATH=/var/www/public localhost/alxandr/dbost
