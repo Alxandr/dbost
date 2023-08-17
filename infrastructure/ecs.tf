@@ -56,13 +56,13 @@ resource "aws_ecs_task_definition" "dbost" {
       portMappings = [
         {
           appProtocol   = "http2"
-          containerPort = 8000
+          containerPort = 80
           name          = "www"
         }
       ]
 
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:8000/healthz || exit 1"]
+        command     = ["CMD-SHELL", "curl -f http://localhost:80/healthz || exit 1"]
         startPeriod = 2
       }
 
@@ -90,6 +90,10 @@ resource "aws_ecs_task_definition" "dbost" {
           name  = "SELF_URL"
           value = "https://dbost.tv/"
         },
+        {
+          name  = "PORT"
+          value = "80"
+        }
       ]
 
       secrets = [
@@ -152,7 +156,7 @@ resource "aws_ecs_service" "dbost" {
 
   load_balancer {
     container_name   = "dbost"
-    container_port   = "8000"
+    container_port   = "80"
     target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.arn
   }
 

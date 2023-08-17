@@ -181,6 +181,8 @@ async fn axum() -> ! {
 		.unwrap_or(8000);
 
 	let addr = SocketAddrV4::new([0, 0, 0, 0].into(), port);
+	info!(addr = %addr, "starting server");
+
 	let err = axum::Server::bind(&SocketAddr::V4(addr))
 		.serve(router.into_make_service())
 		.await // runs forever(ish)
