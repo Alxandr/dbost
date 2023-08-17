@@ -17,6 +17,7 @@ resource "aws_alb_target_group" "alb_public_webservice_target_group" {
   port             = "80"
   protocol         = "HTTP"
   protocol_version = "HTTP2"
+  target_type      = "ip"
   vpc_id           = module.vpc.vpc_id
 
   health_check {
