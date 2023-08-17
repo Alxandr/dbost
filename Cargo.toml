@@ -21,10 +21,7 @@ edition = "2021"
 async-trait = "0.1.73"
 axum = { version = "0.6.20", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
-built = { version = "0.6.1", default-features = false, features = [
-	"git2",
-	"semver",
-] }
+built = { version = "0.6.1", default-features = false, features = ["semver"] }
 dbost-entities = { version = "0.0.0", path = "./domain/entities" }
 dbost-services = { version = "0.0.0", path = "./domain/services" }
 dbost-session = { version = "0.0.0", path = "./lib/session" }
@@ -85,10 +82,7 @@ url = "2.4.0"
 uuid = { version = "1.4.1", features = ["serde"] }
 
 [build-dependencies]
-built = { version = "0.6.1", default-features = false, features = [
-	"git2",
-	"semver",
-] }
+built = { version = "0.6.1", default-features = false, features = ["semver"] }
 
 [features]
 default = []

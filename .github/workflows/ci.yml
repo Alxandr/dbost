@@ -2,7 +2,7 @@ name: Build image
 
 on:
   pull_request:
-    branches:  
+    branches:
       - main
   push:
     branches:
@@ -31,6 +31,8 @@ jobs:
 
       - name: Build and push
         uses: depot/bake-action@v1
+        env:
+          GIT_SHA: ${{ github.sha }}
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
           files: docker-bake.hcl

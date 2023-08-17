@@ -90,7 +90,7 @@ async fn axum() -> ! {
 	info!(
 		version = built_info::PKG_VERSION,
 		profile = built_info::PROFILE,
-		git.version = built_info::GIT_VERSION,
+		git.sha = option_env!("GIT_SHA"),
 		"dbost info"
 	);
 
