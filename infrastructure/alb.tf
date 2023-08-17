@@ -29,6 +29,10 @@ resource "aws_alb_target_group" "alb_public_webservice_target_group" {
     unhealthy_threshold = "10"
     timeout             = "10"
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 ##### ALB - Listeners #####
 
