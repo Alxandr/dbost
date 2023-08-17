@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "dbost" {
       secrets = [
         {
           name      = "DATABASE_URL"
-          valueFrom = "${aws_secretsmanager_secret.db_migrator.arn}:connection_string::"
+          valueFrom = "${aws_secretsmanager_secret.db_migrator.arn}:connection_string::${aws_secretsmanager_secret_version.db_migrator.version_id}"
         },
       ]
       logConfiguration = {
@@ -77,31 +77,31 @@ resource "aws_ecs_task_definition" "dbost" {
       secrets = [
         {
           name      = "DATABASE_URL"
-          valueFrom = "${aws_secretsmanager_secret.db_app.arn}:connection_string::"
+          valueFrom = "${aws_secretsmanager_secret.db_app.arn}:connection_string::${aws_secretsmanager_secret_version.db_app.version_id}"
         },
         {
           name      = "SESSION_KEY"
-          valueFrom = "${aws_secretsmanager_secret.web.arn}:session_key::"
+          valueFrom = "${aws_secretsmanager_secret.web.arn}:session_key::${data.aws_secretsmanager_secret_version.web.version_id}"
         },
         {
           name      = "API_KEY"
-          valueFrom = "${aws_secretsmanager_secret.web.arn}:api_key::"
+          valueFrom = "${aws_secretsmanager_secret.web.arn}:api_key::${data.aws_secretsmanager_secret_version.web.version_id}"
         },
         {
           name      = "GITHUB_CLIENT_ID"
-          valueFrom = "${aws_secretsmanager_secret.web.arn}:github_client_id::"
+          valueFrom = "${aws_secretsmanager_secret.web.arn}:github_client_id::${data.aws_secretsmanager_secret_version.web.version_id}"
         },
         {
           name      = "GITHUB_CLIENT_SECRET"
-          valueFrom = "${aws_secretsmanager_secret.web.arn}:github_client_secret::"
+          valueFrom = "${aws_secretsmanager_secret.web.arn}:github_client_secret::${data.aws_secretsmanager_secret_version.web.version_id}"
         },
         {
           name      = "TVDB_API_KEY"
-          valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:api_key::"
+          valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:api_key::${data.aws_secretsmanager_secret_version.tvdb.version_id}"
         },
         {
           name      = "TVDB_USER_PIN"
-          valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:user_pin::"
+          valueFrom = "${aws_secretsmanager_secret.tvdb.arn}:user_pin::${data.aws_secretsmanager_secret_version.tvdb.version_id}"
         },
       ]
       logConfiguration = {
