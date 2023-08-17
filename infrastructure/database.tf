@@ -39,6 +39,10 @@ resource "aws_db_instance" "dbost_db" {
   publicly_accessible = true
 }
 
+resource "postgresql_extension" "pg_trgm" {
+  name = "pg_trgm"
+}
+
 resource "random_password" "db_user_app_password" {
   length           = 32
   special          = true
