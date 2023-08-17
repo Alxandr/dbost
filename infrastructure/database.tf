@@ -42,13 +42,13 @@ resource "aws_db_instance" "dbost_db" {
 resource "random_password" "db_user_app_password" {
   length           = 32
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!$%&*()-_=+[]{}<>"
 }
 
 resource "random_password" "db_user_migrator_password" {
   length           = 32
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!$%&*()-_=+[]{}<>"
 }
 
 resource "postgresql_role" "app" {

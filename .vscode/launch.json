@@ -1,0 +1,238 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'dbost'",
+			"cargo": {
+				"args": ["build", "--bin=dbost", "--package=dbost"],
+				"filter": {
+					"name": "dbost",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'dbost'",
+			"cargo": {
+				"args": ["test", "--no-run", "--bin=dbost", "--package=dbost"],
+				"filter": {
+					"name": "dbost",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'axum-healthcheck'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=axum-healthcheck"],
+				"filter": {
+					"name": "axum-healthcheck",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'dbost-entities'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=dbost-entities"],
+				"filter": {
+					"name": "dbost-entities",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'dbost-services'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=dbost-services"],
+				"filter": {
+					"name": "dbost-services",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'dbost-session'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=dbost-session"],
+				"filter": {
+					"name": "dbost-session",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'dbost-utils'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=dbost-utils"],
+				"filter": {
+					"name": "dbost-utils",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'tvdb-client'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=tvdb-client"],
+				"filter": {
+					"name": "tvdb-client",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'migration'",
+			"cargo": {
+				"args": ["test", "--no-run", "--lib", "--package=dbost-migration"],
+				"filter": {
+					"name": "migration",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'dbost-migration'",
+			"cargo": {
+				"args": ["build", "--bin=dbost-migration", "--package=dbost-migration"],
+				"filter": {
+					"name": "dbost-migration",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"env": {}
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'dbost-migration'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=dbost-migration",
+					"--package=dbost-migration"
+				],
+				"filter": {
+					"name": "dbost-migration",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'dbost-jobs-db-cleanup'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=dbost-jobs-db-cleanup",
+					"--package=dbost-jobs-db-cleanup"
+				],
+				"filter": {
+					"name": "dbost-jobs-db-cleanup",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'dbost-jobs-db-cleanup'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=dbost-jobs-db-cleanup",
+					"--package=dbost-jobs-db-cleanup"
+				],
+				"filter": {
+					"name": "dbost-jobs-db-cleanup",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'dbost-jobs-seed'",
+			"cargo": {
+				"args": ["build", "--bin=dbost-jobs-seed", "--package=dbost-jobs-seed"],
+				"filter": {
+					"name": "dbost-jobs-seed",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'dbost-jobs-seed'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=dbost-jobs-seed",
+					"--package=dbost-jobs-seed"
+				],
+				"filter": {
+					"name": "dbost-jobs-seed",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}
