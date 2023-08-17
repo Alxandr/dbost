@@ -60,6 +60,21 @@ resource "aws_lb_listener" "lb_listener-webservice-https" {
   }
 }
 
+# SSL Certificate
+resource "aws_acm_certificate" "ssl_certificate" {
+  domain_name               = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method         = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+# SSL Certificate validation
+resource "aws_acm_certificate_validation" "cert_validation" {
+  certificate_arn = aws_acm_certificate.ssl_certificate.arn
+}
+
 ### R53 Zone ###
 resource "aws_route53_zone" "dbost" {
   name = var.domain_name
