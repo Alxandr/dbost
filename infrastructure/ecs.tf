@@ -138,6 +138,10 @@ resource "aws_ecs_task_definition" "dbost" {
       }
     }
   ])
+
+  lifecycle {
+    ignore_changes = [container_definitions]
+  }
 }
 
 ##### AWS ECS-SERVICE #####
