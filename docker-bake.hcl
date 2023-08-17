@@ -3,7 +3,7 @@ variable "version" {
 }
 
 group "default" {
-  targets = ["web", "migrator", "db-cleaner"]
+  targets = ["web", "migrator", "db-cleaner", "deployer"]
 }
 
 target "_base" {
@@ -27,6 +27,9 @@ target "migrator" {
 target "deployer" {
   inherits = [ "_base" ]
 	target = "deployer"
+	args = {
+		VERSION = "${version}"
+	}
 	tags = [ "ghcr.io/alxandr/dbost/deployer", "ghcr.io/alxandr/dbost/deployer:${version}" ]
 }
 
