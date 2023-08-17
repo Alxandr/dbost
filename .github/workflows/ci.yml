@@ -1,4 +1,4 @@
-name: Build image
+name: CI
 
 on:
   pull_request:
@@ -9,12 +9,14 @@ on:
       - main
 
 jobs:
-  docker-image:
+  build:
     runs-on: ubuntu-latest
+    name: Build images
     permissions:
       contents: read
       id-token: write
       packages: write
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -42,3 +44,25 @@ jobs:
       #   shell: bash
       #   run: |
       #     docker buildx imagetools
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to AWS
+    needs: build
+
+    concurrency:
+      group: aws
+
+    environment:
+      name: aws
+      url: https://dbost.tv
+
+    steps:
+      - name: Deploy to AWS
+        shell: bash
+        run: |
+          docker run --rm -it \
+            -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} \
+            ghcr.io/alxandr/dbost/deployer:${{ github.sha }}
