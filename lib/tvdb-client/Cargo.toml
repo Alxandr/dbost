@@ -9,15 +9,15 @@ edition = "2021"
 async-trait = "0.1.73"
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
 itertools = "0.11.0"
-reqwest = { version = "0.11.18", features = [
+reqwest = { version = "0.11.18", default-features = false, features = [
 	"gzip",
-	"native-tls",
-	"native-tls-vendored",
-	"native-tls-alpn",
+	"rustls-tls",
 ] }
 reqwest-middleware = "0.2.3"
 serde = { version = "1.0.178", features = ["derive"] }
-serde_json = { version = "1.0.104", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.104", default-features = false, features = [
+	"std",
+] }
 task-local-extensions = "0.1.4"
 thiserror = "1.0.44"
 tracing = "0.1.37"

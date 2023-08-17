@@ -1,3 +1,9 @@
+###################################################################################
+#
+# CLIENT BUILDERS
+#
+###################################################################################
+
 FROM docker.io/node:lts as client-builder
 WORKDIR /app
 
@@ -11,7 +17,13 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-FROM docker.io/lukemathwalker/cargo-chef:latest AS chef
+###################################################################################
+#
+# SERVER BUILDERS
+#
+###################################################################################
+
+FROM docker.io/lukemathwalker/cargo-chef:latest-rust-slim-bookworm AS chef
 ARG TARGETARCH=amd64
 
 ENV CARGO_TERM_COLOR=always
@@ -30,37 +42,45 @@ FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM chef AS builder-common
+FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
 
 # Build dependencies - this is the caching Docker layer!
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release --workspace --recipe-path recipe.json
 
 # Build application
 COPY . .
+RUN cargo build --release --workspace
 
-FROM builder-common AS builder-web
-RUN cargo build --release --bin dbost
+###################################################################################
+#
+# RUNTIME BASE IMAGE
+#
+###################################################################################
 
-FROM builder-web AS builder-job
-ARG BIN_NAME
-ARG PACKAGE
-RUN cargo build --release --bin "${BIN_NAME}" --package "${PACKAGE}"
-
-FROM docker.io/debian:stable-slim AS runtime
-RUN apt-get update && apt-get install -y curl ca-certificates tini && rm -rf /var/lib/apt/lists/*
+FROM docker.io/debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# We do not need the Rust toolchain to run the binary!
-FROM runtime as job
-ARG BIN_NAME
-ARG PACKAGE
-ENV BIN_NAME=${BIN_NAME}
-COPY --from=builder-job "/app/target/release/${BIN_NAME}" /usr/local/bin
-CMD ["sh", "-c", "/usr/local/bin/${BIN_NAME}"]
+###################################################################################
+#
+# TARGETS
+#
+###################################################################################
 
+# DB MIGRATOR JOB IMAGE
+FROM runtime as migrator
+COPY --from=builder "/app/target/release/dbost-migration" /usr/local/bin
+CMD ["sh", "-c", "/usr/local/bin/dbost-migration"]
+
+# DB CLEANER JOB IMAGE
+FROM runtime as db-cleaner
+COPY --from=builder "/app/target/release/dbost-jobs-db-cleanup" /usr/local/bin
+CMD ["sh", "-c", "/usr/local/bin/dbost-jobs-db-cleanup"]
+
+# DBOST WEB IMAGE
 FROM runtime as web
-COPY --from=builder-web /app/target/release/dbost /usr/local/bin
+COPY --from=builder /app/target/release/dbost /usr/local/bin
 COPY --from=client-builder /app/public /var/www/public
 ENV WEB_PUBLIC_PATH=/var/www/public
 CMD ["/usr/local/bin/dbost"]

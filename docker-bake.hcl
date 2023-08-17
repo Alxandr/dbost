@@ -1,3 +1,7 @@
+variable "version" {
+	default = "latest"
+}
+
 group "default" {
   targets = ["web", "migrator", "db-cleaner"]
 }
@@ -11,25 +15,17 @@ target "_base" {
 target "web" {
   inherits = [ "_base" ]
 	target = "web"
-	tags = [ "ghcr.io/alxandr/dbost" ]
+	tags = [ "ghcr.io/alxandr/dbost", "ghcr.io/alxandr/dbost:${version}" ]
 }
 
 target "migrator" {
   inherits = [ "_base" ]
-	target = "job"
-	args =  {
-		BIN_NAME = "dbost-migration"
-		PACKAGE = "dbost-migration"
-	}
-	tags = [ "ghcr.io/alxandr/dbost/migrator" ]
+	target = "migrator"
+	tags = [ "ghcr.io/alxandr/dbost/migrator", "ghcr.io/alxandr/dbost/migrator:${version}" ]
 }
 
 target "db-cleaner" {
   inherits = [ "_base" ]
-	target = "job"
-	args =  {
-		BIN_NAME = "dbost-jobs-db-cleanup"
-		PACKAGE = "dbost-jobs-db-cleanup"
-	}
-	tags = [ "ghcr.io/alxandr/dbost/db-cleaner" ]
+	target = "db-cleaner"
+	tags = [ "ghcr.io/alxandr/dbost/db-cleaner", "ghcr.io/alxandr/dbost/db-cleaner:${version}" ]
 }
