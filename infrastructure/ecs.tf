@@ -142,7 +142,7 @@ resource "aws_ecs_service" "dbost" {
   network_configuration {
     subnets          = module.vpc.public_subnets
     security_groups  = [aws_security_group.public.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   # load_balancer {
