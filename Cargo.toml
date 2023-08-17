@@ -90,4 +90,5 @@ default = []
 live-reload = ["tower-livereload"]
 
 [profile.release]
-lto = "thin"
+# disable this for now, building takes forever on GH
+lto = false

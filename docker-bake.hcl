@@ -11,13 +11,13 @@ target "_base" {
 	platforms = ["linux/amd64"]
 	// platforms = ["linux/amd64", "linux/arm64"]
 	cache-from = ["type=gha", "type=gha,scope=main"]
-	cache-to = ["type=gha,mode=max"]
 }
 
 target "web" {
   inherits = [ "_base" ]
 	target = "web"
 	tags = [ "ghcr.io/alxandr/dbost", "ghcr.io/alxandr/dbost:${version}" ]
+	cache-to = ["type=gha,mode=max"]
 }
 
 target "migrator" {
