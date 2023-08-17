@@ -90,7 +90,7 @@ resource "postgresql_default_privileges" "dbost_app" {
   database = "postgres"
   schema   = "public"
 
-  owner       = postgresql_role.migrator
+  owner       = postgresql_role.migrator.name
   object_type = "table"
   privileges  = ["SELECT", "INSERT", "UPDATE", "DELETE"]
 }
