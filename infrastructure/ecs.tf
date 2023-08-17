@@ -142,8 +142,9 @@ resource "aws_ecs_service" "dbost" {
   network_configuration {
     subnets          = module.vpc.public_subnets
     security_groups  = [aws_security_group.public.id]
-    assign_public_ip = true
+    assign_public_ip = false
   }
+
   # load_balancer {
   #   container_name   = "folderit-webservice"
   #   container_port   = "80"

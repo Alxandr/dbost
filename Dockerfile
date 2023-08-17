@@ -59,7 +59,7 @@ RUN cargo build --release --workspace
 ###################################################################################
 
 FROM docker.io/debian:bookworm-slim AS runtime
-RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl tini && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 ###################################################################################
@@ -83,4 +83,8 @@ FROM runtime as web
 COPY --from=builder /app/target/release/dbost /usr/local/bin
 COPY --from=client-builder /app/public /var/www/public
 ENV WEB_PUBLIC_PATH=/var/www/public
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/healthz || exit 1
+
 CMD ["/usr/local/bin/dbost"]
