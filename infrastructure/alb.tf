@@ -86,3 +86,10 @@ resource "aws_route53_record" "www" {
 #   zone_id         = var.r53_zone_id
 #   ttl             = 60
 # }
+
+### DNSIMPLE domain delegation ###
+# Create a domain delegation
+resource "dnsimple_domain_delegation" "dbost" {
+  domain       = var.domain_name
+  name_servers = aws_route53_zone.dbost.name_servers
+}

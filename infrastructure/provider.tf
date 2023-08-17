@@ -24,3 +24,5 @@ provider "postgresql" {
 }
 
 provider "spacelift" {}
+
+provider "dnsimple" {}

@@ -19,6 +19,11 @@ terraform {
       source  = "spacelift-io/spacelift"
       version = "~> 1.1"
     }
+
+    dnsimple = {
+      source  = "dnsimple/dnsimple"
+      version = "~> 1.1"
+    }
   }
 
   required_version = ">= 1.2.0"
