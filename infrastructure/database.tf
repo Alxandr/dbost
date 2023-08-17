@@ -62,6 +62,7 @@ resource "postgresql_role" "app" {
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
     aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+    random_password.db_master_password,
   ]
 }
 
@@ -76,6 +77,7 @@ resource "postgresql_role" "migrator" {
     aws_db_instance.dbost_db,
     aws_security_group.dbost_db,
     aws_vpc_security_group_ingress_rule.dbost_db_all_ingress,
+    random_password.db_master_password,
   ]
 }
 
