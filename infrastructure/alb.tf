@@ -91,5 +91,5 @@ resource "aws_route53_record" "www" {
 # Create a domain delegation
 resource "dnsimple_domain_delegation" "dbost" {
   domain       = var.domain_name
-  name_servers = aws_route53_zone.dbost.name_servers
+  name_servers = sort(aws_route53_zone.dbost.name_servers)
 }
