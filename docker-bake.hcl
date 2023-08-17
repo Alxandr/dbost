@@ -24,6 +24,12 @@ target "migrator" {
 	tags = [ "ghcr.io/alxandr/dbost/migrator", "ghcr.io/alxandr/dbost/migrator:${version}" ]
 }
 
+target "deployer" {
+  inherits = [ "_base" ]
+	target = "deployer"
+	tags = [ "ghcr.io/alxandr/dbost/deployer", "ghcr.io/alxandr/dbost/deployer:${version}" ]
+}
+
 target "db-cleaner" {
   inherits = [ "_base" ]
 	target = "db-cleaner"

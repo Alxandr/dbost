@@ -33,6 +33,12 @@ jobs:
         uses: depot/bake-action@v1
         env:
           GIT_SHA: ${{ github.sha }}
+          version: ${{ github.sha }}
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
           files: docker-bake.hcl
+
+      # - name: Tag images
+      #   shell: bash
+      #   run: |
+      #     docker buildx imagetools
