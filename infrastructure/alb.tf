@@ -13,10 +13,11 @@ resource "aws_lb" "loadbalancer" {
 
 
 resource "aws_alb_target_group" "alb_public_webservice_target_group" {
-  name             = "dbost-public-webservice-tg"
-  port             = "80"
-  protocol         = "HTTP"
-  protocol_version = "HTTP2"
+  name     = "dbost-public-webservice-tg"
+  port     = "80"
+  protocol = "HTTP"
+  // TODO: Figure out?
+  protocol_version = "HTTP1"
   target_type      = "ip"
   vpc_id           = module.vpc.vpc_id
 
