@@ -155,4 +155,6 @@ resource "aws_ecs_service" "dbost" {
     container_port   = "8000"
     target_group_arn = aws_alb_target_group.alb_public_webservice_target_group.arn
   }
+
+  depends_on = [aws_lb_listener.lb_listener-webservice-https]
 }
