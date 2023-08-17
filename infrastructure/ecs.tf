@@ -61,6 +61,11 @@ resource "aws_ecs_task_definition" "dbost" {
         }
       ]
 
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:8000/healthz || exit 1"]
+        startPeriod = 2
+      }
+
       dependsOn = [
         {
           containerName = "dbost-db-migrator"

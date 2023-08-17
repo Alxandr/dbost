@@ -86,6 +86,5 @@ COPY --from=client-builder /app/public /var/www/public
 ENV WEB_PUBLIC_PATH=/var/www/public
 
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/healthz || exit 1
 
 CMD ["/usr/local/bin/dbost"]
