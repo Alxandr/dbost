@@ -7,7 +7,7 @@
 resource "random_password" "db_master_password" {
   length           = 32
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = local.url_safe_password_specials
 }
 
 resource "aws_db_parameter_group" "dbost_db" {
@@ -42,13 +42,13 @@ resource "aws_db_instance" "dbost_db" {
 resource "random_password" "db_user_app_password" {
   length           = 32
   special          = true
-  override_special = "!$%&*()-_=+[]{}<>"
+  override_special = local.url_safe_password_specials
 }
 
 resource "random_password" "db_user_migrator_password" {
   length           = 32
   special          = true
-  override_special = "!$%&*()-_=+[]{}<>"
+  override_special = local.url_safe_password_specials
 }
 
 resource "postgresql_role" "app" {
