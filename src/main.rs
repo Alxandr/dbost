@@ -3,6 +3,10 @@ mod auth;
 mod extractors;
 mod web;
 
+mod built_info {
+	include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
 use auth::AuthorizationLayer;
 use axum::{
 	extract::{FromRef, State},
@@ -23,7 +27,7 @@ use std::{
 use tokio::signal::unix::{signal, SignalKind};
 use tokio_util::sync::CancellationToken;
 use tower_http::{compression::CompressionLayer, services::ServeDir, trace::TraceLayer};
-use tracing::metadata::LevelFilter;
+use tracing::{info, metadata::LevelFilter};
 use tracing_forest::ForestLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
 use tvdb_client::TvDbClient;
@@ -82,6 +86,13 @@ async fn axum() -> ! {
 				.from_env_lossy(),
 		)
 		.init();
+
+	info!(
+		version = built_info::PKG_VERSION,
+		profile = built_info::PROFILE,
+		git.version = built_info::GIT_VERSION,
+		"dbost info"
+	);
 
 	let connection_string = required_env_var("DATABASE_URL");
 	let database_schema = required_env_var("DATABASE_SCHEMA");
