@@ -77,7 +77,7 @@ async fn _main() -> Result<()> {
 				.image(format!("ghcr.io/alxandr/dbost/migrator:{}", tag))
 				.essential(false)
 				.readonly_root_filesystem(true)
-				.memory_reservation(1024)
+				.memory(1024)
 				.env("DATABASE_SCHEMA", "public")
 				.env("RUST_LOG", "INFO")
 				.secret(
@@ -178,7 +178,7 @@ async fn _main() -> Result<()> {
 		.await
 		.wrap_err("update service")?;
 
-	info!("service successfully updated");
+	info!(tag, "service successfully updated");
 	Ok(())
 }
 
@@ -192,9 +192,6 @@ impl SecretManager {
 
 		let secrets = client
 			.list_secrets()
-			.customize()
-			.await
-			.wrap_err("customize list secrets requrest")?
 			.send()
 			.await
 			.wrap_err("list secrets")?;
