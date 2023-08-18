@@ -207,7 +207,7 @@ where
 					<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 					<meta name="theme-color" content="#1d232a">
 					<meta name="viewport" content="width=device-width, initial-scale=1" />
-					<title>{self.title.as_ref()}</title>
+					<title>{self.title.as_ref()}" | dBost"</title>
 					<link rel="stylesheet" type="text/css" href="/main.css" />
 					<script src="/htmx@1.9.4.min.js" />
 				</head>
