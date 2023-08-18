@@ -1,17 +1,17 @@
 [workspace]
 members = [
 	".",
-	"lib/axum-healthcheck",
-	"lib/tvdb-client",
-	"lib/session",
-	"lib/utils",
-	"lib/htmx",
 	"domain/entities",
 	"domain/migrations",
 	"domain/services",
 	"jobs/db-cleanup",
-	"jobs/seed",
 	"jobs/deploy",
+	"jobs/seed",
+	"lib/axum-healthcheck",
+	"lib/htmx",
+	"lib/session",
+	"lib/tvdb-client",
+	"lib/utils",
 ]
 
 [package]

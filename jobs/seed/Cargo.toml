@@ -2,7 +2,6 @@
 name = "dbost-jobs-seed"
 version = "0.0.0"
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -38,9 +37,9 @@ tracing-forest = { version = "0.1.6", default-features = false, features = [
 	"ansi",
 	"smallvec",
 ] }
-url = "2.4.0"
-uuid = { version = "1.4.1", features = ["serde"] }
-tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
 tracing-subscriber = { version = "0.3.17", default-features = false, features = [
 	"std",
 ] }
+tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
+url = "2.4.0"
+uuid = { version = "1.4.1", features = ["serde"] }
