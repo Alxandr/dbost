@@ -54,7 +54,7 @@ impl AwsClient {
 		};
 
 		let revision = self
-			.update_task_definition(task_definition_factory, tag.as_ref())
+			.register_task_definition(task_definition_factory, tag.as_ref())
 			.await
 			.wrap_err("update task definition")?;
 
@@ -124,7 +124,7 @@ impl AwsClient {
 	}
 
 	#[instrument(skip_all, fields(tag,))]
-	async fn update_task_definition(
+	pub async fn register_task_definition(
 		&self,
 		task_definition_factory: impl for<'a> FnOnce(
 			TaskDefinitionBuilder<'a>,
@@ -194,10 +194,7 @@ impl AwsClient {
 			revision.revision = revision.revision()
 		)
 	)]
-	pub async fn deregister_old_revisions(
-		&self,
-		revision: &TaskDefinitionRevisionId,
-	) -> Result<usize> {
+	async fn deregister_old_revisions(&self, revision: &TaskDefinitionRevisionId) -> Result<usize> {
 		let definitions = self
 			.ecs
 			.list_task_definitions()
@@ -248,7 +245,7 @@ impl AwsClient {
 			revision.revision = revision.revision()
 		)
 	)]
-	pub async fn deregister_revision(&self, revision: &TaskDefinitionRevisionId) -> Result<()> {
+	async fn deregister_revision(&self, revision: &TaskDefinitionRevisionId) -> Result<()> {
 		let arn = revision.arn();
 		self
 			.ecs

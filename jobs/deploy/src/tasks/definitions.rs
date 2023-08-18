@@ -4,17 +4,17 @@ use super::builder::{
 };
 use color_eyre::eyre::{Context, Result};
 
+const DB_SCHEMA: EnvironmentVariable = EnvironmentVariable {
+	name: "DATABASE_SCHEMA",
+	value: "public",
+};
+
+const RUST_LOG: EnvironmentVariable = EnvironmentVariable {
+	name: "RUST_LOG",
+	value: "INFO",
+};
+
 pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBuilder> {
-	let db_schema = EnvironmentVariable {
-		name: "DATABASE_SCHEMA",
-		value: "public",
-	};
-
-	let rust_log = EnvironmentVariable {
-		name: "RUST_LOG",
-		value: "INFO",
-	};
-
 	let migrator = ContainerDefinition {
 		name: "dbost-db-migrator",
 		image: "ghcr.io/alxandr/dbost/migrator",
@@ -24,7 +24,7 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 		ports: [],
 		health_check: None,
 		depends_on: [],
-		env: [db_schema, rust_log],
+		env: [DB_SCHEMA, RUST_LOG],
 		secrets: [Secret {
 			name: "DATABASE_URL",
 			secret: "dbost_db_migrator",
@@ -47,8 +47,8 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 		health_check: Some("http://localhost:80/healthz"),
 		depends_on: [migrator.success()],
 		env: [
-			db_schema,
-			rust_log,
+			DB_SCHEMA,
+			RUST_LOG,
 			EnvironmentVariable {
 				name: "SECURE_COOKIES",
 				value: "true",
@@ -64,7 +64,7 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 		],
 		secrets: [
 			Secret {
-				name: "DATABASE_SCHEMA",
+				name: "DATABASE_URL",
 				secret: "dbost_db_app",
 				field: "connection_string",
 			},
@@ -110,4 +110,31 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 		.wrap_err("building task definition 'dbost'")?
 		.container(dbost)
 		.wrap_err("building task definition 'dbost'")
+}
+
+pub fn dbost_cron(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBuilder> {
+	let db_cleaner = ContainerDefinition {
+		name: "dbost-db-migrator",
+		image: "ghcr.io/alxandr/dbost/db-cleaner",
+		essential: true,
+		ro_fs: true,
+		memory: 1024,
+		ports: [],
+		health_check: None,
+		depends_on: [],
+		env: [DB_SCHEMA, RUST_LOG],
+		secrets: [Secret {
+			name: "DATABASE_URL",
+			secret: "dbost_db_app",
+			field: "connection_string",
+		}],
+		log_prefix: "db-cleaner",
+	};
+
+	builder
+		.family("dbost-db-cleaner")
+		.cpu("512")
+		.memory("1024")
+		.container(db_cleaner)
+		.wrap_err("building task definition 'dbost-db-cleaner'")
 }

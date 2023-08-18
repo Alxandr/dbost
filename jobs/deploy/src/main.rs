@@ -6,7 +6,7 @@ mod tasks;
 use crate::client::AwsClient;
 use aws_config::AppName;
 use clap::Parser;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Context, Result};
 use tracing::{info, metadata::LevelFilter};
 use tracing_forest::ForestLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
@@ -60,9 +60,15 @@ async fn _main() -> Result<()> {
 		.update_service(
 			"arn:aws:ecs:eu-north-1:412850343551:service/dbost-cluster/dbost",
 			tasks::dbost_service,
-			args.tag,
+			&args.tag,
 		)
-		.await?;
+		.await
+		.wrap_err("update dbost service")?;
+
+	client
+		.register_task_definition(tasks::dbost_cron, &args.tag)
+		.await
+		.wrap_err("update dbost cron task definition")?;
 
 	Ok(())
 }
