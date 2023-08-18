@@ -262,7 +262,6 @@ impl SecretManager {
 struct TaskDefinitionRevisionId<'a> {
 	arn: &'a str,
 	family_name: &'a str,
-	family_arn: &'a str,
 	revision: u32,
 }
 
@@ -285,7 +284,6 @@ impl<'a> TryFrom<&'a str> for TaskDefinitionRevisionId<'a> {
 
 		Ok(Self {
 			arn,
-			family_arn,
 			family_name,
 			revision,
 		})
@@ -361,10 +359,6 @@ mod tests {
 
 		let id = TaskDefinitionRevisionId::try_from(arn).expect("parse task definition revision id");
 		assert_eq!(id.arn, arn);
-		assert_eq!(
-			id.family_arn,
-			"arn:aws:ecs:eu-north-1:412850343551:task-definition/dbost"
-		);
 		assert_eq!(id.family_name, "dbost");
 		assert_eq!(id.revision, 27);
 	}
