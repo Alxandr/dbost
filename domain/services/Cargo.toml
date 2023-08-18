@@ -28,7 +28,7 @@ serde = { version = "1.0.183", default-features = false, features = [
 	"rc",
 	"derive",
 ] }
-serde_json = "1.0.104"
+serde_json = "1.0.105"
 thiserror = { version = "1.0.44", default-features = false }
 time = "0.3.25"
 tracing = { version = "0.1.37", default-features = false, features = ["std"] }
