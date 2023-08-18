@@ -2743,9 +2743,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "941f0a6c9723cca59a09e01e05ec8c03186bfd1d911f27d4523da7e722a1bcf5"
+checksum = "204a2c509d17e31d6988b0f35d680e1655bd40fa3b39796cbd203505a4f5f36c"
 dependencies = [
  "bytes",
  "rstml-component-macro",
@@ -2753,9 +2753,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component-axum"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bc058f33af49096ddcfcd2ed6397de0d9c1d1e32cfd2cac381d80c2a6bce011"
+checksum = "2141d6d8094bb696a2b4382536dc0d06798900377aabe602541b76e1983e7f78"
 dependencies = [
  "axum",
  "rstml-component",

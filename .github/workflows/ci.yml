@@ -9,6 +9,24 @@ on:
       - main
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Build images
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Lint
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: Run tests
+        run: cargo test --workspace --all-features
+
   build:
     runs-on: ubuntu-latest
     name: Build images

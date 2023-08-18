@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 pub use crate::funcs::*;
 pub use crate::tables::*;
 pub use crate::utils::*;

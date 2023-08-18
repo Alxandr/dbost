@@ -12,7 +12,10 @@ use axum::{
 use dbost_entities::{season, series, user};
 use dbost_htmx::extractors::HxRequestInfo;
 use dbost_session::Session;
-use rstml_component::{write_html, For, HtmlComponent, HtmlContent, HtmlFormatter};
+use rstml_component::{
+	write_html, For, HtmlAttributes, HtmlAttributesFormatter, HtmlComponent, HtmlContent,
+	HtmlFormatter,
+};
 use rstml_component_axum::Html;
 use sea_orm::{
 	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryOrder, QuerySelect,
@@ -243,10 +246,41 @@ impl SeriesCard {
 	}
 }
 
+// temp - move to rstml_component
+struct Attrs<I>(I)
+where
+	I: IntoIterator,
+	<I as IntoIterator>::Item: HtmlAttributes;
+
+impl<I> HtmlAttributes for Attrs<I>
+where
+	I: IntoIterator,
+	<I as IntoIterator>::Item: HtmlAttributes,
+{
+	fn fmt(self, formatter: &mut HtmlAttributesFormatter) -> fmt::Result {
+		for attr in self.0 {
+			attr.fmt(formatter)?;
+		}
+
+		Ok(())
+	}
+}
+
 impl HtmlContent for SeriesCard {
 	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
+		let next_page_attr = self.next_page_link.as_deref().map(|next_page_link| {
+			Attrs([
+				("hx-get", next_page_link),
+				("hx-trigger", "revealed"),
+				("hx-swap", "afterend"),
+			])
+		});
+
 		write_html!(formatter,
-			<li id=("series-card-", self.id.to_string()) class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid">
+			<li
+				id=("series-card-", self.id.to_string())
+				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid"
+				{next_page_attr}>
 				<figure style="grid-row: 1 / span 2; grid-column: 1 / 1;">
 					<img src=self.image.as_deref() alt=(&*self.name, " image") />
 				</figure>

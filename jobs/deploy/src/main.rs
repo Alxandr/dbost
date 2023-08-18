@@ -168,17 +168,19 @@ async fn _main() -> Result<()> {
 		.task_definition_arn
 		.ok_or_else(|| format_err!("no task definition ARN returned after update"))?;
 
-	let revision =
+	let new_revision =
 		TaskDefinitionRevisionId::try_from(&*new_arn).wrap_err("failed to parse new_arn")?;
 
 	info!(
-		revision.arn,
-		revision.family_name, revision.revision, "new revision created"
+		revision.arn = new_revision.arn,
+		revision.family_name = new_revision.family_name,
+		revision.revision = new_revision.revision,
+		"new revision created"
 	);
 
 	let definitions = client
 		.list_task_definitions()
-		.family_prefix(revision.family_arn)
+		.family_prefix(new_revision.family_arn)
 		.send()
 		.await
 		.wrap_err("list task definitions")?
@@ -186,15 +188,23 @@ async fn _main() -> Result<()> {
 		.ok_or_else(|| format_err!("no task definitions returned"))?;
 
 	for arn in definitions {
-		let rev = TaskDefinitionRevisionId::try_from(&*arn)?;
-		if rev.family_name != revision.family_name && rev.revision >= revision.revision {
+		let existing_revision = TaskDefinitionRevisionId::try_from(&*arn)?;
+		if existing_revision.family_name != new_revision.family_name
+			|| existing_revision.revision >= new_revision.revision
+		{
+			info!(
+				revision.arn = existing_revision.arn,
+				revision.family_name = existing_revision.family_name,
+				revision.revision = existing_revision.revision,
+				"skipping revision"
+			);
 			continue;
 		}
 
 		info!(
-			revision.arn = rev.arn,
-			revision.family_name = rev.family_name,
-			revision.revision = rev.revision,
+			revision.arn = existing_revision.arn,
+			revision.family_name = existing_revision.family_name,
+			revision.revision = existing_revision.revision,
 			"deregistering old revision"
 		);
 	}
