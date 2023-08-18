@@ -50,7 +50,7 @@ impl AwsClient {
 			let last_slash = service_arn
 				.rfind('/')
 				.ok_or_else(|| format_err!("no slash in service arn"))?;
-			&service_arn[..last_slash]
+			service_arn[..last_slash].replace(":service/", ":cluster/")
 		};
 
 		let revision = self
@@ -58,7 +58,7 @@ impl AwsClient {
 			.await
 			.wrap_err("update task definition")?;
 
-		let definition = self.update_service_task_definition(cluster_arn, service_arn, &revision)
+		let definition = self.update_service_task_definition(&cluster_arn, service_arn, &revision)
 			.await
 			.wrap_err_with(|| format!("failed to update service task definition for service '{service_arn}' to revision '{revision}'"))?;
 
