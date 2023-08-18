@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+mod revisions;
 
 use aws_config::AppName;
 use aws_sdk_ecs::types::{
@@ -9,9 +9,12 @@ use aws_sdk_ecs::types::{
 use aws_sdk_secretsmanager::types::SecretListEntry;
 use clap::Parser;
 use color_eyre::eyre::{format_err, Context, Result};
+use std::collections::HashMap;
 use tracing::{debug, info, metadata::LevelFilter};
 use tracing_forest::ForestLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
+
+use crate::revisions::TaskDefinitionRevisionId;
 
 const REGION: &str = "eu-north-1";
 
@@ -172,49 +175,15 @@ async fn _main() -> Result<()> {
 		TaskDefinitionRevisionId::try_from(&*new_arn).wrap_err("failed to parse new_arn")?;
 
 	info!(
-		revision.arn = new_revision.arn,
-		revision.family_name = new_revision.family_name,
-		revision.revision = new_revision.revision,
+		revision.arn = new_revision.arn(),
+		revision.family_name = new_revision.family_name(),
+		revision.revision = new_revision.revision(),
 		"new revision created"
 	);
 
-	let definitions = client
-		.list_task_definitions()
-		.family_prefix(new_revision.family_name)
-		.send()
+	revisions::derigster_old_revisions(&client, new_revision)
 		.await
-		.wrap_err("list task definitions")?
-		.task_definition_arns
-		.ok_or_else(|| format_err!("no task definitions returned"))?;
-
-	for arn in definitions.iter().map(|a| &**a) {
-		let existing_revision = TaskDefinitionRevisionId::try_from(arn)?;
-		if existing_revision.family_name != new_revision.family_name
-			|| existing_revision.revision >= new_revision.revision
-		{
-			// info!(
-			// 	revision.arn = existing_revision.arn,
-			// 	revision.family_name = existing_revision.family_name,
-			// 	revision.revision = existing_revision.revision,
-			// 	"skipping revision"
-			// );
-			continue;
-		}
-
-		info!(
-			revision.arn = existing_revision.arn,
-			revision.family_name = existing_revision.family_name,
-			revision.revision = existing_revision.revision,
-			"deregistering old revision"
-		);
-
-		client
-			.deregister_task_definition()
-			.task_definition(arn)
-			.send()
-			.await
-			.wrap_err_with(|| format!("failed to deregister task definition '{arn}'"))?;
-	}
+		.wrap_err("deregister old revisions")?;
 
 	client
 		.update_service()
@@ -262,38 +231,6 @@ impl SecretManager {
 			.get(name)
 			.ok_or_else(|| format_err!("secret {name} not found"))
 			.map_err(Into::into)
-	}
-}
-
-#[derive(Debug, Clone)]
-struct TaskDefinitionRevisionId<'a> {
-	arn: &'a str,
-	family_name: &'a str,
-	revision: u32,
-}
-
-impl<'a> TryFrom<&'a str> for TaskDefinitionRevisionId<'a> {
-	type Error = color_eyre::eyre::Report;
-
-	fn try_from(arn: &'a str) -> Result<Self> {
-		let last_colon = arn
-			.rfind(':')
-			.ok_or_else(|| format_err!("missing : in ARN"))?;
-		let family_arn = &arn[..last_colon];
-		let revision = arn[(last_colon + 1)..]
-			.parse::<u32>()
-			.wrap_err("parse task definition revision id")?;
-
-		let last_slash = family_arn
-			.rfind('/')
-			.ok_or_else(|| format_err!("missing / in ARN"))?;
-		let family_name = &family_arn[(last_slash + 1)..];
-
-		Ok(Self {
-			arn,
-			family_name,
-			revision,
-		})
 	}
 }
 
@@ -353,20 +290,5 @@ impl ContainerDefinitionBuilderExt for ContainerDefinitionBuilder {
 				.value_from(secret.field(field))
 				.build(),
 		)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn task_revision_parse() {
-		let arn = "arn:aws:ecs:eu-north-1:412850343551:task-definition/dbost:27";
-
-		let id = TaskDefinitionRevisionId::try_from(arn).expect("parse task definition revision id");
-		assert_eq!(id.arn, arn);
-		assert_eq!(id.family_name, "dbost");
-		assert_eq!(id.revision, 27);
 	}
 }
