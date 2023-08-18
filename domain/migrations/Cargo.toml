@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 [dependencies]
 uuid = "1.4.1"
-tokio = { version = "1.31.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread"] }
 sea-orm-migration = { version = "0.12.2", default-features = false, features = [
 	"cli",
 	"sqlx-postgres",
