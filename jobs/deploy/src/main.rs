@@ -180,7 +180,7 @@ async fn _main() -> Result<()> {
 
 	let definitions = client
 		.list_task_definitions()
-		.family_prefix(new_revision.family_arn)
+		.family_prefix(new_revision.family_name)
 		.send()
 		.await
 		.wrap_err("list task definitions")?
