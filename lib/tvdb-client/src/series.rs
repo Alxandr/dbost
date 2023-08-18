@@ -10,6 +10,8 @@ use tracing::{error, info, info_span, instrument, Instrument};
 struct SeriesDto {
 	id: u64,
 	name: String,
+	#[serde(default)]
+	overview: Option<String>,
 	seasons: Vec<SeriesSeasonDto>,
 	#[serde(default)]
 	image: Option<String>,
@@ -46,6 +48,8 @@ struct SeasonDto {
 	#[serde(default)]
 	name: Option<String>,
 	#[serde(default)]
+	overview: Option<String>,
+	#[serde(default)]
 	translations: TranslationsDto,
 	#[serde(default)]
 	image: Option<String>,
@@ -56,13 +60,22 @@ struct SeasonDto {
 #[derive(Deserialize, Default, Debug)]
 struct TranslationsDto {
 	#[serde(rename = "nameTranslations", default)]
-	name_translations: Option<Vec<TranslationDto>>,
+	name_translations: Option<Vec<NameTranslationDto>>,
+
+	#[serde(rename = "overviewTranslations", default)]
+	overview_translations: Option<Vec<OverviewTranslationDto>>,
 }
 
 #[derive(Deserialize, Debug)]
-struct TranslationDto {
+struct NameTranslationDto {
 	language: String,
 	name: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct OverviewTranslationDto {
+	language: String,
+	overview: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -81,6 +94,7 @@ struct ResultDto<T> {
 pub struct Series {
 	pub id: u64,
 	pub name: String,
+	pub description: Option<String>,
 	pub image: Option<String>,
 	pub seasons: Vec<Season>,
 }
@@ -89,6 +103,7 @@ pub struct Season {
 	pub id: u64,
 	pub number: u16,
 	pub name: Option<String>,
+	pub description: Option<String>,
 	pub image: Option<String>,
 }
 
@@ -151,11 +166,26 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		})
 		.or(season.name);
 
+	let overview = season
+		.translations
+		.overview_translations
+		.into_iter()
+		.flatten()
+		.find_map(|t| {
+			if t.language == "eng" {
+				Some(t.overview)
+			} else {
+				None
+			}
+		})
+		.or(season.overview);
+
 	let image = get_image(season.image, season.artworks);
 	Ok(Season {
 		id,
 		number,
 		name,
+		description: overview,
 		image,
 	})
 }
@@ -209,6 +239,20 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 		})
 		.unwrap_or(series.name);
 
+	let overview = series
+		.translations
+		.overview_translations
+		.into_iter()
+		.flatten()
+		.find_map(|t| {
+			if t.language == "eng" {
+				Some(t.overview)
+			} else {
+				None
+			}
+		})
+		.or(series.overview);
+
 	let mut seasons = Vec::with_capacity(series.seasons.len());
 	let mut futures_unordered = FuturesUnordered::new();
 	for season in series
@@ -234,6 +278,7 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 	Ok(Some(Series {
 		id,
 		name,
+		description: overview,
 		seasons,
 		image,
 	}))

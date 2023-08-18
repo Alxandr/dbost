@@ -5,6 +5,7 @@ pub enum Series {
 	Table,
 	Id,
 	Name,
+	Description,
 	#[iden = "tvdb_id"]
 	TvDbId,
 	ThemeSongId,
@@ -16,6 +17,7 @@ pub enum Season {
 	Table,
 	Id,
 	Name,
+	Description,
 	SeriesId,
 	Number,
 	#[iden = "tvdb_id"]

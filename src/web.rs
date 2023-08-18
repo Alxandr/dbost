@@ -398,12 +398,16 @@ async fn series(
 				<Template title=&*series.name session=session>
 					<div class="rounded-lg min-h-72 hero">
 						<div class="flex-col hero-content lg:flex-row">
-							<figure class="max-w-sm shadow-2xl">
-								<img src=series.image.as_deref() class="rounded-lg" referrerpolicy="no-referrer" />
+							<figure class="flex-none shadow-2xl w-96">
+								<img
+									src=series.image.as_deref()
+									class="rounded-lg"
+									referrerpolicy="no-referrer"
+									alt=(&*series.name, " thumbnail") />
 							</figure>
-							<div>
+							<div class="flex-1">
 								<h1 class="text-5xl font-bold">{&*series.name}</h1>
-								//TODO: <p class="py-6">{&*series.description}</p>
+								<p class="py-6">{series.description.as_deref()}</p>
 							</div>
 						</div>
 					</div>
@@ -411,14 +415,21 @@ async fn series(
 						<For items={seasons}>
 							{ |f, s| {
 								let season_id = s.id.to_string();
+								let season_number_display = format!("Season {:02}", s.number);
+								let season_name = s.name.as_deref().unwrap_or(&*season_number_display);
 
 								write_html!(f,
 									<li id=(&*series_id, "/season/", &*season_id) class="flex gap-4 p-4 rounded-lg bg-base-200">
-										<figure class="shadow-2xl max-w-[14rem]">
-											<img src=s.image.as_deref().or(series.image.as_deref()) class="rounded-lg" referrerpolicy="no-referrer" />
+										<figure class="flex-none w-56 shadow-2xl">
+											<img
+												src=s.image.as_deref().or(series.image.as_deref())
+												class="rounded-lg"
+												referrerpolicy="no-referrer"
+												alt=(season_name, " thumbnail") />
 										</figure>
-										<div>
-											<h2 class="text-3xl font-bold">{s.name.unwrap_or_else(|| format!("Season {:02}", s.number))}</h2>
+										<div class="flex-1">
+											<h2 class="text-3xl font-bold tooltip" data-tip=&*season_number_display>{season_name}</h2>
+											<p class="py-6">{s.description.as_deref()}</p>
 										</div>
 									</li>
 								)

@@ -119,6 +119,7 @@ impl SeriesService {
 						season::ActiveModel {
 							id: Set(season_id),
 							name: Set(update.name),
+							description: Set(update.description),
 							number: Set(update.number as i16),
 							tvdb_id: Set(update.id as i32),
 							series_id: Set(series_id),
@@ -152,6 +153,7 @@ impl SeriesService {
 			let series = series::ActiveModel {
 				id: Set(Uuid::new_v4()),
 				name: Set(update.name),
+				description: Set(update.description),
 				tvdb_id: Set(update.id as i32),
 				image: Set(update.image),
 				theme_song_id: Set(None),
@@ -173,6 +175,7 @@ impl SeriesService {
 		) -> Result<SeriesWithSeasons, SeriesServiceError> {
 			let mut series: series::ActiveModel = series.into();
 			series.name.update(update.name);
+			series.description.update(update.description);
 			if let Some(image) = update.image {
 				series.image.update(Some(image));
 			}
@@ -198,6 +201,7 @@ impl SeriesService {
 					Some(update) => {
 						let mut season: season::ActiveModel = season.into();
 						season.name.update(update.name);
+						season.description.update(update.description);
 						season.number.update(update.number as i16);
 						if let Some(image) = update.image {
 							season.image.update(Some(image));

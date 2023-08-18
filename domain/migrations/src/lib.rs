@@ -13,6 +13,7 @@ mod m20230807_142613_versioning;
 mod m20230811_170956_sessions;
 mod m20230813_063316_artwork;
 mod m20230813_131452_hot_indices;
+mod m20230818_124952_descriptions;
 
 pub struct Migrator;
 
@@ -28,6 +29,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230811_170956_sessions::Migration),
             Box::new(m20230813_063316_artwork::Migration),
             Box::new(m20230813_131452_hot_indices::Migration),
+            Box::new(m20230818_124952_descriptions::Migration),
         ]
 	}
 }

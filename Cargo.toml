@@ -94,3 +94,11 @@ live-reload = ["tower-livereload"]
 [profile.release]
 # disable this for now, building takes forever on GH
 lto = false
+
+[dev-dependencies]
+pre-commit-hooks = "0.3"
+
+[package.metadata.precommit]
+fmt = "cargo fmt"
+sort = "cargo sort -w"
+check = "cargo clippy --workspace -- -D warnings"
