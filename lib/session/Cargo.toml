@@ -21,7 +21,7 @@ sea-orm = { version = "0.12.2", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
-thiserror = "1.0.44"
+thiserror = "1.0.47"
 time = "0.3.25"
 tower-layer = "0.3.2"
 tower-service = "0.3.2"
