@@ -5,6 +5,7 @@ members = [
 	"lib/tvdb-client",
 	"lib/session",
 	"lib/utils",
+	"lib/htmx",
 	"domain/entities",
 	"domain/migrations",
 	"domain/services",
@@ -24,6 +25,7 @@ axum = { version = "0.6.20", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
 built = { version = "0.6.1", default-features = false, features = ["semver"] }
 dbost-entities = { version = "0.0.0", path = "./domain/entities" }
+dbost-htmx = { version = "0.0.0", path = "./lib/htmx" }
 dbost-services = { version = "0.0.0", path = "./domain/services" }
 dbost-session = { version = "0.0.0", path = "./lib/session" }
 dbost-utils = { version = "0.0.0", path = "./lib/utils" }
@@ -31,8 +33,8 @@ futures = { version = "0.3.28", default-features = false, features = ["std"] }
 futures-util = { version = "0.3.28", default-features = false }
 indexmap = { version = "2.0.0", default-features = false, features = ["std"] }
 md5 = "0.7.0"
-rstml-component = "0.1.2"
-rstml-component-axum = "0.2.1"
+rstml-component = "0.2.0"
+rstml-component-axum = "0.2.3"
 sea-orm = { version = "0.12.2", default-features = false, features = [
 	"debug-print",
 	"macros",

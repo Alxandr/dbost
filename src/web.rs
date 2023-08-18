@@ -1,20 +1,18 @@
 mod auth;
+mod pagination;
 
-use crate::{extractors::Db, AppState};
+use crate::{extractors::Db, web::pagination::Pagination, AppState};
 use axum::{
 	extract::{OriginalUri, Query},
-	http::{StatusCode, Uri},
+	http::StatusCode,
 	response::IntoResponse,
 	routing::get,
 	Router,
 };
 use dbost_entities::{season, series, user};
+use dbost_htmx::extractors::HxRequestInfo;
 use dbost_session::Session;
-use indexmap::IndexMap;
-use rstml_component::{
-	write_html, For, HtmlAttributeFormatter, HtmlAttributeValue, HtmlComponent, HtmlContent,
-	HtmlFormatter,
-};
+use rstml_component::{write_html, For, HtmlComponent, HtmlContent, HtmlFormatter};
 use rstml_component_axum::Html;
 use sea_orm::{
 	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryOrder, QuerySelect,
@@ -22,10 +20,12 @@ use sea_orm::{
 };
 use sea_query::JoinType;
 use serde::Deserialize;
-use std::{borrow::Cow, error, fmt};
+use std::{borrow::Cow, error, fmt, sync::Arc};
 use thiserror::Error;
 use tracing::log::warn;
 use uuid::Uuid;
+
+use self::pagination::PageNumber;
 
 #[derive(Error, Debug)]
 enum WebError {
@@ -214,12 +214,33 @@ where
 	}
 }
 
-#[derive(HtmlComponent, FromQueryResult)]
+#[derive(FromQueryResult)]
+struct SeriesCardDb {
+	name: String,
+	id: Uuid,
+	image: Option<String>,
+	season_count: i64,
+}
+
+#[derive(HtmlComponent)]
 struct SeriesCard {
 	name: String,
 	id: Uuid,
 	image: Option<String>,
 	season_count: i64,
+	next_page_link: Option<Arc<str>>,
+}
+
+impl SeriesCard {
+	pub fn new(db: SeriesCardDb, next_page_link: Option<Arc<str>>) -> Self {
+		Self {
+			name: db.name,
+			id: db.id,
+			image: db.image,
+			season_count: db.season_count,
+			next_page_link,
+		}
+	}
 }
 
 impl HtmlContent for SeriesCard {
@@ -238,99 +259,6 @@ impl HtmlContent for SeriesCard {
 	}
 }
 
-#[derive(HtmlComponent)]
-struct Pagination {
-	page: PageNumber,
-	pages: u64,
-	url: Uri,
-}
-
-impl HtmlContent for Pagination {
-	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
-		struct PageButton {
-			id: &'static str,
-			display: u64,
-			query: String,
-			disabled: bool,
-		}
-
-		impl HtmlContent for PageButton {
-			fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
-				if self.disabled {
-					write_html!(formatter,
-						<a id=self.id href=("?", self.query) class="join-item btn" disabled>{self.display}</a>
-					)
-				} else {
-					write_html!(formatter,
-						<a id=self.id href=("?", self.query) class="join-item btn">{self.display}</a>
-					)
-				}
-			}
-		}
-
-		let query: IndexMap<&str, Option<String>> =
-			serde_urlencoded::from_str(self.url.query().unwrap_or_default()).unwrap_or_default();
-
-		let page = move |page: u64| {
-			let mut query = query.clone();
-			if page <= 1 {
-				query.remove("page");
-			} else {
-				query.insert("page", Some(page.to_string()));
-			}
-
-			serde_urlencoded::to_string(query).unwrap()
-		};
-
-		let first_page = (self.page > 0).then(|| PageButton {
-			id: "goto-first",
-			display: 1,
-			query: page(1),
-			disabled: false,
-		});
-
-		let prev_page = (self.page > 1).then(|| PageButton {
-			id: "goto-prev",
-			display: self.page.display(),
-			query: page(self.page.display()),
-			disabled: false,
-		});
-
-		let current_page = PageButton {
-			id: "goto-current",
-			display: self.page.display(),
-			query: page(self.page.display()),
-			disabled: true,
-		};
-
-		let next_page = (self.page.index() + 2 < self.pages).then(|| PageButton {
-			id: "goto-next",
-			display: self.page.display() + 1,
-			query: page(self.page.display() + 1),
-			disabled: false,
-		});
-
-		let last_page = (self.page.index() + 1 < self.pages).then(|| PageButton {
-			id: "goto-last",
-			display: self.pages,
-			query: page(self.pages),
-			disabled: false,
-		});
-
-		write_html!(formatter,
-			<nav class="flex flex-row justify-center p-4">
-				<div class="join">
-					{first_page}
-					{prev_page}
-					{current_page}
-					{next_page}
-					{last_page}
-				</div>
-			</nav>
-		)
-	}
-}
-
 #[derive(Deserialize)]
 struct CallbackQuery {
 	// #[serde(default)]
@@ -342,6 +270,7 @@ async fn index(
 	session: Session,
 	Query(query): Query<CallbackQuery>,
 	OriginalUri(uri): OriginalUri,
+	HxRequestInfo(_): HxRequestInfo,
 ) -> Result<impl IntoResponse, WebError> {
 	let paginator = series::Entity::find()
 		.select_only()
@@ -352,7 +281,7 @@ async fn index(
 		.join(JoinType::LeftJoin, series::Relation::Season.def())
 		.group_by(series::Column::Id)
 		.order_by_asc(series::Column::Name)
-		.into_model::<SeriesCard>()
+		.into_model::<SeriesCardDb>()
 		.paginate(&db, 60);
 
 	let pages = paginator.num_pages().await?;
@@ -360,7 +289,19 @@ async fn index(
 		return Ok((StatusCode::NOT_FOUND, "Page not found").into_response());
 	}
 
+	let pagination = Pagination::new(pages, query.page, uri);
+
+	let next_page_link: Option<Arc<str>> = pagination.next_page_href().map(Arc::from);
 	let series = paginator.fetch_page(query.page.index()).await?;
+	let series_count = series.len();
+	let series = series.into_iter().enumerate().map(|(i, s)| {
+		let next_page_link = match i == series_count - 1 {
+			true => next_page_link.clone(),
+			false => None,
+		};
+
+		SeriesCard::new(s, next_page_link)
+	});
 
 	let html = Html::from_fn(move |f| {
 		write_html!(f,
@@ -369,11 +310,11 @@ async fn index(
 
 				<ul class="grid grid-cols-1 gap-4 auto-rows-cards sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
 					<For items={series}>
-						{ |f, s| s.fmt(f) }
+						{ move |f, s| s.fmt(f) }
 					</For>
 				</ul>
 
-				<Pagination page=query.page pages=pages url=uri />
+				{pagination}
 			</Template>
 		)
 	});
@@ -385,73 +326,4 @@ pub fn router() -> Router<AppState> {
 	Router::new()
 		.nest("/auth", auth::router())
 		.route("/", get(index))
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-struct PageNumber(u64);
-
-impl PageNumber {
-	fn index(&self) -> u64 {
-		self.0
-	}
-
-	fn display(&self) -> u64 {
-		self.0 + 1
-	}
-}
-
-impl PartialEq<u64> for PageNumber {
-	fn eq(&self, other: &u64) -> bool {
-		self.index() == *other
-	}
-}
-
-impl PartialEq<PageNumber> for u64 {
-	fn eq(&self, other: &PageNumber) -> bool {
-		*self == other.index()
-	}
-}
-
-impl PartialOrd<u64> for PageNumber {
-	fn partial_cmp(&self, other: &u64) -> Option<std::cmp::Ordering> {
-		self.index().partial_cmp(other)
-	}
-}
-
-impl PartialOrd<PageNumber> for u64 {
-	fn partial_cmp(&self, other: &PageNumber) -> Option<std::cmp::Ordering> {
-		self.partial_cmp(&other.index())
-	}
-}
-
-impl fmt::Display for PageNumber {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", self.display())
-	}
-}
-
-impl HtmlAttributeValue for PageNumber {
-	fn fmt(self, formatter: &mut HtmlAttributeFormatter) -> fmt::Result {
-		HtmlAttributeValue::fmt(self.0 + 1, formatter)
-	}
-}
-
-impl HtmlContent for PageNumber {
-	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
-		HtmlContent::fmt(self.0 + 1, formatter)
-	}
-}
-
-impl<'de> Deserialize<'de> for PageNumber {
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: serde::Deserializer<'de>,
-	{
-		let v: Option<u64> = Option::deserialize(deserializer)?;
-		match v {
-			None => Ok(Self(0)),
-			Some(0) => Ok(Self(0)),
-			Some(v) => Ok(Self(v - 1)),
-		}
-	}
 }

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use aws_config::AppName;
 use aws_sdk_ecs::types::{
 	builders::ContainerDefinitionBuilder, ApplicationProtocol, Compatibility, ContainerCondition,
 	ContainerDefinition, ContainerDependency, HealthCheck, KeyValuePair, LogConfiguration, LogDriver,
@@ -11,6 +12,8 @@ use color_eyre::eyre::{format_err, Context, Result};
 use tracing::{debug, info, metadata::LevelFilter};
 use tracing_forest::ForestLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
+
+const REGION: &str = "eu-north-1";
 
 /// CLI to deploy new version to AWS
 #[derive(Parser, Debug)]
@@ -38,7 +41,22 @@ async fn main() -> Result<()> {
 
 async fn _main() -> Result<()> {
 	let args = Args::parse();
-	let config = aws_config::load_from_env().await;
+	let config = aws_config::from_env()
+		.region(REGION)
+		.app_name(AppName::new("dbost-deploy").unwrap())
+		.load()
+		.await;
+
+	info!(
+		region = ?config.region(),
+		endpoint_url = ?config.endpoint_url(),
+		retry_config = ?config.retry_config(),
+		app_name = ?config.app_name(),
+		use_fips = ?config.use_fips(),
+		use_dual_stack = ?config.use_dual_stack(),
+		"loaded config"
+	);
+
 	let client = aws_sdk_ecs::Client::new(&config);
 	let secrets = SecretManager::fetch(&config)
 		.await
@@ -72,7 +90,7 @@ async fn _main() -> Result<()> {
 						.log_driver(LogDriver::Awslogs)
 						.options("awslogs-create-group", "true")
 						.options("awslogs-group", "dbost")
-						.options("awslogs-region", "eu-north-1")
+						.options("awslogs-region", REGION)
 						.options("awslogs-stream-prefix", "migrator")
 						.build(),
 				)
@@ -133,7 +151,7 @@ async fn _main() -> Result<()> {
 						.log_driver(LogDriver::Awslogs)
 						.options("awslogs-create-group", "true")
 						.options("awslogs-group", "dbost")
-						.options("awslogs-region", "eu-north-1")
+						.options("awslogs-region", REGION)
 						.options("awslogs-stream-prefix", "web")
 						.build(),
 				)
@@ -174,6 +192,9 @@ impl SecretManager {
 
 		let secrets = client
 			.list_secrets()
+			.customize()
+			.await
+			.wrap_err("customize list secrets requrest")?
 			.send()
 			.await
 			.wrap_err("list secrets")?;

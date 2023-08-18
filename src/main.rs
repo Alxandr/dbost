@@ -151,6 +151,15 @@ async fn axum() -> ! {
 
 	let mut router = Router::new()
 		.route("/healthz", get(health_check))
+		.route(
+			"/infoz",
+			get(|| async {
+				format!(
+					"git.sha: {}",
+					option_env!("GIT_SHA").as_deref().unwrap_or_default()
+				)
+			}),
+		)
 		.nest(
 			"/api",
 			api::router().route_layer(AuthorizationLayer::new(api_key)),

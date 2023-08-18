@@ -1093,6 +1093,7 @@ dependencies = [
  "axum-healthcheck",
  "built",
  "dbost-entities",
+ "dbost-htmx",
  "dbost-services",
  "dbost-session",
  "dbost-utils",
@@ -1128,6 +1129,14 @@ version = "0.0.0"
 dependencies = [
  "sea-orm",
  "time",
+]
+
+[[package]]
+name = "dbost-htmx"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "htmx-headers",
 ]
 
 [[package]]
@@ -1736,6 +1745,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5444c27eef6923071f7ebcc33e3444508466a76f7a2b93da00ed6e19f30c1ddb"
 dependencies = [
  "windows-sys",
+]
+
+[[package]]
+name = "htmx-headers"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c194cb66a3837f7e397b57031e9d1bfd431ffa292e2849698d5740fe4cff26cd"
+dependencies = [
+ "headers",
+ "http",
 ]
 
 [[package]]
@@ -2724,9 +2743,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11f1939b5e1f54103c34a01eeb122d8bd79a8ad7796562c81f41df43c356f83e"
+checksum = "941f0a6c9723cca59a09e01e05ec8c03186bfd1d911f27d4523da7e722a1bcf5"
 dependencies = [
  "bytes",
  "rstml-component-macro",
@@ -2734,9 +2753,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component-axum"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6c961897f4c015070e07f311493246a855a4cbb9a123ee9978817c898f87575"
+checksum = "8bc058f33af49096ddcfcd2ed6397de0d9c1d1e32cfd2cac381d80c2a6bce011"
 dependencies = [
  "axum",
  "rstml-component",
@@ -2744,9 +2763,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component-macro"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "629f16315764ed7271479bce163b58db0e167f9089497140946336b5d298c93f"
+checksum = "20b5739c5b2f2fe461082c5dcc7ae95a332ffd247ec2be6cc08f81a5a7431c40"
 dependencies = [
  "convert_case",
  "indexmap 2.0.0",
