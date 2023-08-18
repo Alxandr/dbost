@@ -3,8 +3,9 @@ mod pagination;
 
 use crate::{extractors::Db, web::pagination::Pagination, AppState};
 use axum::{
-	extract::{OriginalUri, Query},
-	http::StatusCode,
+	body::BoxBody,
+	extract::{OriginalUri, Path, Query},
+	http::{Response, StatusCode},
 	response::IntoResponse,
 	routing::get,
 	Router,
@@ -18,7 +19,7 @@ use rstml_component::{
 };
 use rstml_component_axum::Html;
 use sea_orm::{
-	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryOrder, QuerySelect,
+	ColumnTrait, EntityTrait, FromQueryResult, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
 	RelationTrait, TransactionError,
 };
 use sea_query::JoinType;
@@ -32,8 +33,9 @@ use self::pagination::PageNumber;
 
 #[derive(Error, Debug)]
 enum WebError {
-	// #[error("Page not found")]
-	// NotFound,
+	#[error("Page not found")]
+	NotFound,
+
 	#[error("Database error: {0}")]
 	DbError(#[from] sea_orm::error::DbErr),
 
@@ -57,7 +59,8 @@ impl IntoResponse for WebError {
 	fn into_response(self) -> axum::response::Response {
 		warn!("{}", self);
 		match self {
-			// Self::NotFound => (StatusCode::NOT_FOUND, "Series not found").into_response(),
+			Self::NotFound => (StatusCode::NOT_FOUND, "Series not found").into_response(),
+
 			Self::DbError(_) => {
 				(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response()
 			}
@@ -277,18 +280,21 @@ impl HtmlContent for SeriesCard {
 			])
 		});
 
+		let id = self.id.to_string();
 		write_html!(formatter,
 			<li
-				id=("series-card-", self.id.to_string())
+				id=("series-card-", &*id)
 				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid"
 				{next_page_attr}>
-				<figure style="grid-row: 1 / span 2; grid-column: 1 / 1;">
-					<img src=self.image.as_deref() alt=(&*self.name, " image") />
-				</figure>
-				<div class="p-4 text-base bg-base-100/80" style="grid-row: 2 / span 1; grid-column: 1 / 1;">
-					<h2 class="card-title">{self.name}</h2>
-					<p>"Seasons: " {self.season_count}</p>
-				</div>
+				<a class="contents" href=("/series/", &*id)>
+					<figure style="grid-row: 1 / span 2; grid-column: 1 / 1;">
+						<img src=self.image.as_deref() alt=(&*self.name, " image") referrerpolicy="no-referrer" />
+					</figure>
+					<div class="p-4 text-base bg-base-100/80" style="grid-row: 2 / span 1; grid-column: 1 / 1;">
+						<h2 class="card-title">{self.name}</h2>
+						<p>"Seasons: " {self.season_count}</p>
+					</div>
+				</a>
 			</li>
 		)
 	}
@@ -306,7 +312,7 @@ async fn index(
 	Query(query): Query<CallbackQuery>,
 	OriginalUri(uri): OriginalUri,
 	HxRequestInfo(hx): HxRequestInfo,
-) -> Result<impl IntoResponse, WebError> {
+) -> Result<Response<BoxBody>, WebError> {
 	let paginator = series::Entity::find()
 		.select_only()
 		.column(series::Column::Name)
@@ -367,8 +373,68 @@ async fn index(
 	}
 }
 
+async fn series(
+	Path(series_id): Path<Uuid>,
+	Db(db): Db,
+	session: Session,
+	HxRequestInfo(_): HxRequestInfo,
+) -> Result<Response<BoxBody>, WebError> {
+	let series = series::Entity::find_by_id(series_id)
+		.one(&db)
+		.await?
+		.ok_or(WebError::NotFound)?;
+
+	let seasons = season::Entity::find()
+		.filter(season::Column::SeriesId.eq(series_id))
+		.order_by_asc(season::Column::Number)
+		.all(&db)
+		.await?;
+
+	Ok(
+		Html::from_fn(move |f| {
+			let series_id = series.id.to_string();
+
+			write_html!(f,
+				<Template title=&*series.name session=session>
+					<div class="rounded-lg min-h-72 hero">
+						<div class="flex-col hero-content lg:flex-row">
+							<figure class="max-w-sm shadow-2xl">
+								<img src=series.image.as_deref() class="rounded-lg" referrerpolicy="no-referrer" />
+							</figure>
+							<div>
+								<h1 class="text-5xl font-bold">{&*series.name}</h1>
+								//TODO: <p class="py-6">{&*series.description}</p>
+							</div>
+						</div>
+					</div>
+					<ul class="mt-20 space-y-8">
+						<For items={seasons}>
+							{ |f, s| {
+								let season_id = s.id.to_string();
+
+								write_html!(f,
+									<li id=(&*series_id, "/season/", &*season_id) class="flex gap-4 p-4 rounded-lg bg-base-200">
+										<figure class="shadow-2xl max-w-[14rem]">
+											<img src=s.image.as_deref().or(series.image.as_deref()) class="rounded-lg" referrerpolicy="no-referrer" />
+										</figure>
+										<div>
+											<h2 class="text-3xl font-bold">{s.name.unwrap_or_else(|| format!("Season {:02}", s.number))}</h2>
+										</div>
+									</li>
+								)
+							} }
+						</For>
+					</ul>
+				</Template>
+			)
+		})
+		.into_response(),
+	)
+}
+
 pub fn router() -> Router<AppState> {
 	Router::new()
 		.nest("/auth", auth::router())
 		.route("/", get(index))
+		.route("/series/:id", get(series))
 }
