@@ -66,7 +66,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to AWS
-    needs: build
+    needs:
+      - build
+      - test
+
     if: github.ref == 'refs/heads/main'
 
     concurrency:
