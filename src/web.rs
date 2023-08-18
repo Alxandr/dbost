@@ -79,7 +79,7 @@ impl HtmlContent for NavSearchBox {
 	fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
 		write_html!(formatter,
 			<div class="form-control">
-				<input type="text" placeholder="Search" class="w-24 input input-bordered md:w-auto" />
+				<input type="text" placeholder="Search" class="w-24 input input-bordered sm:w-auto" />
 			</div>
 		)
 	}
@@ -152,7 +152,7 @@ impl<'a> HtmlContent for NavBar<'a> {
 				// </div>
 
 				<div class="flex-1">
-					<a class="text-xl normal-case btn btn-ghost hover:bg-transparent">"dBost"</a>
+					<a class="text-xl normal-case btn btn-ghost hover:bg-transparent" href="/">"dBost"</a>
 					<span class="normal-case text-normal">"| ˈdi: buːst |"</span>
 				</div>
 
@@ -206,6 +206,7 @@ where
 					<meta name="msapplication-TileColor" content="#1d232a">
 					<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 					<meta name="theme-color" content="#1d232a">
+					<meta name="viewport" content="width=device-width, initial-scale=1" />
 					<title>{self.title.as_ref()}</title>
 					<link rel="stylesheet" type="text/css" href="/main.css" />
 					<script src="/htmx@1.9.4.min.js" />
@@ -398,10 +399,10 @@ async fn series(
 				<Template title=&*series.name session=session>
 					<div class="rounded-lg min-h-72 hero">
 						<div class="flex-col hero-content lg:flex-row">
-							<figure class="flex-none shadow-2xl w-96">
+							<figure class="flex-none w-full sm:w-96">
 								<img
 									src=series.image.as_deref()
-									class="rounded-lg"
+									class="rounded-lg shadow-2xl"
 									referrerpolicy="no-referrer"
 									alt=(&*series.name, " thumbnail") />
 							</figure>
@@ -419,11 +420,14 @@ async fn series(
 								let season_name = s.name.as_deref().unwrap_or(&*season_number_display);
 
 								write_html!(f,
-									<li id=(&*series_id, "/season/", &*season_id) class="flex gap-4 p-4 rounded-lg bg-base-200">
-										<figure class="flex-none w-56 shadow-2xl">
+									<li
+										id=(&*series_id, "/season/", &*season_id)
+										class="flex flex-col gap-4 p-4 rounded-lg sm:flex-row bg-base-200"
+									>
+										<figure class="self-center flex-none w-full sm:self-start sm:w-56">
 											<img
 												src=s.image.as_deref().or(series.image.as_deref())
-												class="rounded-lg"
+												class="mx-auto rounded-lg shadow-2xl"
 												referrerpolicy="no-referrer"
 												alt=(season_name, " thumbnail") />
 										</figure>
