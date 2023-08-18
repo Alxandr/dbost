@@ -8,6 +8,7 @@ use task_local_extensions::Extensions;
 use thiserror::Error;
 use tracing::{info, info_span, Instrument};
 
+mod artworks;
 mod auth;
 mod series;
 
@@ -22,6 +23,9 @@ pub use series::{Season, Series};
 pub enum TvDbError {
 	#[error("Request error: {0}")]
 	RequestError(#[from] reqwest_middleware::Error),
+
+	#[error("Failed to parse: {0}")]
+	ParseError(#[from] serde_json::Error),
 }
 
 impl From<reqwest::Error> for TvDbError {

@@ -1,4 +1,4 @@
-use crate::{TvDbClient, TvDbError, TvDbUrl};
+use crate::{artworks::ArtworkKind, TvDbClient, TvDbError, TvDbUrl};
 use async_trait::async_trait;
 use futures::{stream::FuturesUnordered, StreamExt};
 use itertools::Itertools;
@@ -13,9 +13,7 @@ struct SeriesDto {
 	#[serde(default)]
 	overview: Option<String>,
 	seasons: Vec<SeriesSeasonDto>,
-	#[serde(default)]
-	image: Option<String>,
-	#[serde(default, deserialize_with = "nullable_vec")]
+	#[serde(default, deserialize_with = "nullable_vec", alias = "artwork")]
 	artworks: Vec<ArtworkDto>,
 	translations: TranslationsDto,
 }
@@ -23,11 +21,11 @@ struct SeriesDto {
 #[derive(Deserialize, Debug)]
 struct ArtworkDto {
 	#[serde(rename = "type")]
-	ty: i32,
+	kind: ArtworkKind,
 	#[serde(default)]
 	image: Option<String>,
-	#[serde(default)]
-	thumbnail: Option<String>,
+	// #[serde(default)]
+	// thumbnail: Option<String>,
 	// #[serde(default)]
 	// language: Option<String>,
 	#[serde(default)]
@@ -51,9 +49,7 @@ struct SeasonDto {
 	overview: Option<String>,
 	#[serde(default)]
 	translations: TranslationsDto,
-	#[serde(default)]
-	image: Option<String>,
-	#[serde(default, deserialize_with = "nullable_vec")]
+	#[serde(default, deserialize_with = "nullable_vec", alias = "artwork")]
 	artworks: Vec<ArtworkDto>,
 }
 
@@ -143,14 +139,26 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		.if_ok()
 		.await?;
 
-	let season = season_response
-		.json::<ResultDto<SeasonDto>>()
-		.await
+	let body_str = season_response.text().await?;
+	// if number == 3 {
+	// 	let _ = std::fs::write("season.json", &body_str);
+	// }
+
+	let season = serde_json::from_str::<ResultDto<SeasonDto>>(&body_str)
 		.map_err(|e| {
 			error!(error = %e, season = id, "failed to parse season response");
 			e
 		})?
 		.data;
+
+	// let season = season_response
+	// 	.json::<ResultDto<SeasonDto>>()
+	// 	.await
+	// 	.map_err(|e| {
+	// 		error!(error = %e, season = id, "failed to parse season response");
+	// 		e
+	// 	})?
+	// 	.data;
 
 	let name = season
 		.translations
@@ -180,7 +188,7 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		})
 		.or(season.overview);
 
-	let image = get_image(season.image, season.artworks);
+	let image = get_image(season.artworks, ArtworkKind::SeasonPoster);
 	Ok(Season {
 		id,
 		number,
@@ -190,25 +198,14 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 	})
 }
 
-fn get_image(image: Option<String>, artworks: Vec<ArtworkDto>) -> Option<String> {
-	if let Some(image) = image {
-		return Some(image);
-	}
-
-	let mut artworks = artworks
+fn get_image(artworks: Vec<ArtworkDto>, kind: ArtworkKind) -> Option<String> {
+	let artworks = artworks
 		.into_iter()
-		.filter(|a| matches!(a.ty, 2 | 7))
+		.filter(|a| a.kind == kind)
 		.sorted_by_key(|a| a.score)
 		.collect_vec();
 
-	artworks
-		.iter()
-		.enumerate()
-		.find(|(_, a)| a.thumbnail.is_some())
-		.or_else(|| artworks.iter().enumerate().find(|(_, a)| a.image.is_some()))
-		.map(|(i, _)| i)
-		.map(|i| artworks.remove(i))
-		.and_then(|a| a.image.or(a.thumbnail))
+	artworks.into_iter().filter_map(|a| a.image).next()
 }
 
 #[instrument(skip(client))]
@@ -224,7 +221,7 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 
 	let series = response.json::<ResultDto<SeriesDto>>().await?.data;
 	let id = series.id;
-	let image = get_image(series.image, series.artworks);
+	let image = get_image(series.artworks, ArtworkKind::SeriesPoster);
 	let name = series
 		.translations
 		.name_translations
