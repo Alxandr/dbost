@@ -106,6 +106,7 @@ impl Page {
 
 #[derive(HtmlComponent)]
 pub struct Pagination {
+	pages: u64,
 	first_page: Option<Page>,
 	prev_page: Option<Page>,
 	current_page: Page,
@@ -119,7 +120,7 @@ impl Pagination {
 
 		let query = move |page: PageNumber| {
 			let mut query = query.clone();
-			if page <= 1 {
+			if page < 1 {
 				query.remove("page");
 			} else {
 				query.insert("page", Some(page.to_string()));
@@ -132,10 +133,11 @@ impl Pagination {
 		let first_page = (page > 0).then(|| query(PageNumber::FIRST));
 		let prev_page = (page > 1).then(|| query(page - 1));
 		let current_page = query(page);
-		let next_page = (page + 2 < pages).then(|| query(page + 1));
-		let last_page = (page + 1 < pages).then(|| query(PageNumber(pages)));
+		let next_page = (page + 1 < pages).then(|| query(page + 1));
+		let last_page = (page + 2 < pages).then(|| query(PageNumber(pages - 1)));
 
 		Self {
+			pages,
 			first_page,
 			prev_page,
 			current_page,
@@ -164,56 +166,71 @@ impl HtmlContent for Pagination {
 		impl HtmlContent for PageButton {
 			fn fmt(self, formatter: &mut HtmlFormatter) -> fmt::Result {
 				let disabled_attribute = self.disabled.then_some(("disabled", ()));
+				let current_attribute = self.disabled.then_some(("aria-current", "true"));
+				let current_text = if self.disabled {
+					"Current Page, Page "
+				} else {
+					"Goto Page "
+				};
+
 				write_html!(formatter,
-					<a id=self.id href=("?", self.query) class="join-item btn" {disabled_attribute}>{self.display}</a>
+					<li>
+						<a
+							id=self.id href=("?", self.query)
+							class="join-item btn"
+							aria-label=(current_text, self.display)
+							{disabled_attribute}
+							{current_attribute}
+						>{self.display}</a>
+					</li>
 				)
 			}
 		}
 
 		let first_page = self.first_page.map(|page| PageButton {
-			id: "goto-first",
+			id: "first-page",
 			display: page.display(),
 			query: page.query,
 			disabled: false,
 		});
 
 		let prev_page = self.prev_page.map(|page| PageButton {
-			id: "goto-prev",
+			id: "prev-page",
 			display: page.display(),
 			query: page.query,
 			disabled: false,
 		});
 
 		let current_page = PageButton {
-			id: "goto-current",
+			id: "current-page",
 			display: self.current_page.display(),
 			query: self.current_page.query,
 			disabled: true,
 		};
 
 		let next_page = self.next_page.map(|page| PageButton {
-			id: "goto-next",
+			id: "next-page",
 			display: page.display(),
 			query: page.query,
 			disabled: false,
 		});
 
 		let last_page = self.last_page.map(|page| PageButton {
-			id: "goto-last",
+			id: "last-page",
 			display: page.display(),
 			query: page.query,
 			disabled: false,
 		});
 
 		write_html!(formatter,
-			<nav class="flex flex-row justify-center p-4">
-				<div class="join">
+			<nav class="flex flex-row justify-center p-4" role="navigation" aria-label="Pagination Navigation" data-pages=self.pages>
+				<ul class="join">
 					{first_page}
 					{prev_page}
 					{current_page}
 					{next_page}
 					{last_page}
-				</div>
+				</ul>
 			</nav>
 		)
 	}

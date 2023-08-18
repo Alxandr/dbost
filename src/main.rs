@@ -178,7 +178,19 @@ async fn axum() -> ! {
 
 	#[cfg(feature = "live-reload")]
 	{
-		router = router.layer(LiveReloadLayer::new());
+		#[derive(Clone, Copy)]
+		struct NotHxRequestPredicate;
+
+		impl tower_livereload::predicate::Predicate<axum::http::Request<axum::body::Body>>
+			for NotHxRequestPredicate
+		{
+			fn check(&mut self, p: &axum::http::Request<axum::body::Body>) -> bool {
+				!p.headers()
+					.contains_key(&dbost_htmx::headers::request::HX_REQUEST)
+			}
+		}
+
+		router = router.layer(LiveReloadLayer::new().request_predicate(NotHxRequestPredicate));
 	}
 
 	router = router

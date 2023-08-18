@@ -11,3 +11,16 @@
 	grid-row: 2 / span 1;
 	grid-column: 1 / 1;
 }
+
+.htmx-indicator {
+	opacity: 0;
+	transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+	opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+	opacity: 1;
+}

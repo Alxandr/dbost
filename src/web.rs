@@ -205,6 +205,7 @@ where
 					<meta name="theme-color" content="#1d232a">
 					<title>{self.title.as_ref()}</title>
 					<link rel="stylesheet" type="text/css" href="/main.css" />
+					<script src="/htmx@1.9.4.min.js" />
 				</head>
 				<body>
 					<NavBar user=self.session.user().as_deref() />
@@ -304,7 +305,7 @@ async fn index(
 	session: Session,
 	Query(query): Query<CallbackQuery>,
 	OriginalUri(uri): OriginalUri,
-	HxRequestInfo(_): HxRequestInfo,
+	HxRequestInfo(hx): HxRequestInfo,
 ) -> Result<impl IntoResponse, WebError> {
 	let paginator = series::Entity::find()
 		.select_only()
@@ -337,23 +338,33 @@ async fn index(
 		SeriesCard::new(s, next_page_link)
 	});
 
-	let html = Html::from_fn(move |f| {
-		write_html!(f,
-			<Template title="Series" session=session>
-				<h1 class="mb-8 text-4xl font-bold">Series</h1>
+	let items = For {
+		items: series,
+		children: |f, s| s.fmt(f),
+	};
 
-				<ul class="grid grid-cols-1 gap-4 auto-rows-cards sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-					<For items={series}>
-						{ move |f, s| s.fmt(f) }
-					</For>
-				</ul>
+	match hx {
+		Some(_) => {
+			// tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+			Ok(Html(items).into_response())
+		},
+		None => Ok(Html::from_fn(move |f| {
+			write_html!(f,
+				<Template title="Series" session=session>
+					<h1 class="mb-8 text-4xl font-bold">Series</h1>
 
-				{pagination}
-			</Template>
-		)
-	});
-
-	Ok(html.into_response())
+					<ul
+						class="grid grid-cols-1 gap-4 auto-rows-cards sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+						hx-indicator=".htmx-indicator">
+						{items}
+					</ul>
+					<center>
+						<img class="htmx-indicator" width="60" src="/img/bars.svg" />
+					</center>
+				</Template>
+			)
+		}).into_response())
+	}
 }
 
 pub fn router() -> Router<AppState> {
