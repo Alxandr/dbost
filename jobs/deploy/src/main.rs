@@ -167,17 +167,37 @@ async fn _main() -> Result<()> {
 	let new_arn = new_task_definition
 		.task_definition_arn
 		.ok_or_else(|| format_err!("no task definition ARN returned after update"))?;
-	let new_family = new_task_definition
-		.family
-		.ok_or_else(|| format_err!("no task definition family returned after update"))?;
 
-	let new_arn = &*new_arn;
-	let new_arn_without_revision = {
-		let last_colon = new_arn.rfind(':').unwrap();
-		&new_arn[..last_colon]
-	};
+	let revision =
+		TaskDefinitionRevisionId::try_from(&*new_arn).wrap_err("failed to parse new_arn")?;
 
-	info!(revision.arn = new_arn, "new revision created");
+	info!(
+		revision.arn,
+		revision.family_name, revision.revision, "new revision created"
+	);
+
+	let definitions = client
+		.list_task_definitions()
+		.family_prefix(revision.family_arn)
+		.send()
+		.await
+		.wrap_err("list task definitions")?
+		.task_definition_arns
+		.ok_or_else(|| format_err!("no task definitions returned"))?;
+
+	for arn in definitions {
+		let rev = TaskDefinitionRevisionId::try_from(&*arn)?;
+		if rev.family_name != revision.family_name && rev.revision >= revision.revision {
+			continue;
+		}
+
+		info!(
+			revision.arn = rev.arn,
+			revision.family_name = rev.family_name,
+			revision.revision = rev.revision,
+			"deregistering old revision"
+		);
+	}
 
 	client
 		.update_service()
@@ -189,25 +209,6 @@ async fn _main() -> Result<()> {
 		.wrap_err("update service")?;
 
 	info!(tag, "service successfully updated");
-
-	let definitions = client
-		.list_task_definitions()
-		.family_prefix(new_family)
-		.send()
-		.await
-		.wrap_err("list task definitions")?
-		.task_definition_arns
-		.ok_or_else(|| format_err!("no task definitions returned"))?;
-
-	let to_remove: Vec<_> = definitions
-		.into_iter()
-		.filter(|arn| arn.starts_with(new_arn_without_revision))
-		.filter(|arn| arn != new_arn)
-		.collect();
-
-	for arn in to_remove {
-		info!(arn, "deregistering old revision");
-	}
 
 	Ok(())
 }
@@ -244,6 +245,40 @@ impl SecretManager {
 			.get(name)
 			.ok_or_else(|| format_err!("secret {name} not found"))
 			.map_err(Into::into)
+	}
+}
+
+#[derive(Debug, Clone)]
+struct TaskDefinitionRevisionId<'a> {
+	arn: &'a str,
+	family_name: &'a str,
+	family_arn: &'a str,
+	revision: u32,
+}
+
+impl<'a> TryFrom<&'a str> for TaskDefinitionRevisionId<'a> {
+	type Error = color_eyre::eyre::Report;
+
+	fn try_from(arn: &'a str) -> Result<Self> {
+		let last_colon = arn
+			.rfind(':')
+			.ok_or_else(|| format_err!("missing : in ARN"))?;
+		let family_arn = &arn[..last_colon];
+		let revision = arn[(last_colon + 1)..]
+			.parse::<u32>()
+			.wrap_err("parse task definition revision id")?;
+
+		let last_slash = family_arn
+			.rfind('/')
+			.ok_or_else(|| format_err!("missing / in ARN"))?;
+		let family_name = &family_arn[(last_slash + 1)..];
+
+		Ok(Self {
+			arn,
+			family_arn,
+			family_name,
+			revision,
+		})
 	}
 }
 
@@ -303,5 +338,24 @@ impl ContainerDefinitionBuilderExt for ContainerDefinitionBuilder {
 				.value_from(secret.field(field))
 				.build(),
 		)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn task_revision_parse() {
+		let arn = "arn:aws:ecs:eu-north-1:412850343551:task-definition/dbost:27";
+
+		let id = TaskDefinitionRevisionId::try_from(arn).expect("parse task definition revision id");
+		assert_eq!(id.arn, arn);
+		assert_eq!(
+			id.family_arn,
+			"arn:aws:ecs:eu-north-1:412850343551:task-definition/dbost"
+		);
+		assert_eq!(id.family_name, "dbost");
+		assert_eq!(id.revision, 27);
 	}
 }
