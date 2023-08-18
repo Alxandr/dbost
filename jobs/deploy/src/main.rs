@@ -161,11 +161,21 @@ async fn _main() -> Result<()> {
 		.await
 		.wrap_err("update task definition")?;
 
-	let new_arn = result
+	let new_task_definition = result
 		.task_definition
-		.ok_or_else(|| format_err!("no task definition returned after update"))?
+		.ok_or_else(|| format_err!("no task definition returned after update"))?;
+	let new_arn = new_task_definition
 		.task_definition_arn
 		.ok_or_else(|| format_err!("no task definition ARN returned after update"))?;
+	let new_family = new_task_definition
+		.family
+		.ok_or_else(|| format_err!("no task definition family returned after update"))?;
+
+	let new_arn = &*new_arn;
+	let new_arn_without_revision = {
+		let last_colon = new_arn.rfind(':').unwrap();
+		&new_arn[..last_colon]
+	};
 
 	info!(revision.arn = new_arn, "new revision created");
 
@@ -179,6 +189,26 @@ async fn _main() -> Result<()> {
 		.wrap_err("update service")?;
 
 	info!(tag, "service successfully updated");
+
+	let definitions = client
+		.list_task_definitions()
+		.family_prefix(new_family)
+		.send()
+		.await
+		.wrap_err("list task definitions")?
+		.task_definition_arns
+		.ok_or_else(|| format_err!("no task definitions returned"))?;
+
+	let to_remove: Vec<_> = definitions
+		.into_iter()
+		.filter(|arn| arn.starts_with(new_arn_without_revision))
+		.filter(|arn| arn != new_arn)
+		.collect();
+
+	for arn in to_remove {
+		info!(arn, "deregistering old revision");
+	}
+
 	Ok(())
 }
 
