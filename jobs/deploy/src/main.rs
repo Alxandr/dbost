@@ -187,17 +187,17 @@ async fn _main() -> Result<()> {
 		.task_definition_arns
 		.ok_or_else(|| format_err!("no task definitions returned"))?;
 
-	for arn in definitions {
-		let existing_revision = TaskDefinitionRevisionId::try_from(&*arn)?;
+	for arn in definitions.iter().map(|a| &**a) {
+		let existing_revision = TaskDefinitionRevisionId::try_from(arn)?;
 		if existing_revision.family_name != new_revision.family_name
 			|| existing_revision.revision >= new_revision.revision
 		{
-			info!(
-				revision.arn = existing_revision.arn,
-				revision.family_name = existing_revision.family_name,
-				revision.revision = existing_revision.revision,
-				"skipping revision"
-			);
+			// info!(
+			// 	revision.arn = existing_revision.arn,
+			// 	revision.family_name = existing_revision.family_name,
+			// 	revision.revision = existing_revision.revision,
+			// 	"skipping revision"
+			// );
 			continue;
 		}
 
@@ -207,6 +207,13 @@ async fn _main() -> Result<()> {
 			revision.revision = existing_revision.revision,
 			"deregistering old revision"
 		);
+
+		client
+			.deregister_task_definition()
+			.task_definition(arn)
+			.send()
+			.await
+			.wrap_err_with(|| format!("failed to deregister task definition '{arn}'"))?;
 	}
 
 	client
