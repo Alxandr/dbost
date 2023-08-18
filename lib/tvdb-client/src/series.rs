@@ -140,25 +140,12 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		.await?;
 
 	let body_str = season_response.text().await?;
-	// if number == 3 {
-	// 	let _ = std::fs::write("season.json", &body_str);
-	// }
-
 	let season = serde_json::from_str::<ResultDto<SeasonDto>>(&body_str)
 		.map_err(|e| {
 			error!(error = %e, season = id, "failed to parse season response");
 			e
 		})?
 		.data;
-
-	// let season = season_response
-	// 	.json::<ResultDto<SeasonDto>>()
-	// 	.await
-	// 	.map_err(|e| {
-	// 		error!(error = %e, season = id, "failed to parse season response");
-	// 		e
-	// 	})?
-	// 	.data;
 
 	let name = season
 		.translations
