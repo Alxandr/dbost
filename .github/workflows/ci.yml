@@ -86,7 +86,9 @@ jobs:
           GIT_SHA: ${{ github.sha }}
           version: ${{ github.sha }}
           _EXPERIMENTAL_DAGGER_CACHE_CONFIG: "type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
-        run: pnpm exec tsx ci/index.mts
+        run: |
+          pnpm i
+          pnpm exec tsx ci/index.mts
 
   deploy:
     runs-on: ubuntu-latest
