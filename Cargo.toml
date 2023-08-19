@@ -6,6 +6,7 @@ members = [
 	"domain/services",
 	"jobs/db-cleanup",
 	"jobs/deploy",
+	"jobs/pre-compress",
 	"jobs/seed",
 	"lib/axum-healthcheck",
 	"lib/htmx",
@@ -24,6 +25,7 @@ async-trait = "0.1.73"
 axum = { version = "0.6.20", features = ["http2", "tracing"] }
 axum-healthcheck = { version = "0.0.0", path = "./lib/axum-healthcheck" }
 built = { version = "0.6.1", default-features = false, features = ["semver"] }
+cfg-if = { version = "1.0.0", default-features = false }
 dbost-entities = { version = "0.0.0", path = "./domain/entities" }
 dbost-htmx = { version = "0.0.0", path = "./lib/htmx" }
 dbost-services = { version = "0.0.0", path = "./domain/services" }
@@ -54,6 +56,7 @@ serde_json = { version = "1.0.105", default-features = false, features = [
 ] }
 serde_urlencoded = { version = "0.7.1", default-features = false }
 static_assertions = "1.1.0"
+sysinfo = { version = "0.29.8", default-features = false, optional = true }
 thiserror = "1.0.47"
 time = { version = "0.3.26", default-features = false, features = ["std"] }
 tokio = { version = "1.32.0", features = [
@@ -92,7 +95,7 @@ built = { version = "0.6.1", default-features = false, features = ["semver"] }
 
 [features]
 default = []
-live-reload = ["tower-livereload"]
+dev = ["tower-livereload", "sysinfo"]
 
 [profile.release]
 # disable this for now, building takes forever on GH

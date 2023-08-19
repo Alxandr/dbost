@@ -1,24 +1,5 @@
 ###################################################################################
 #
-# CLIENT BUILDERS
-#
-###################################################################################
-
-FROM docker.io/node:lts as client-builder
-WORKDIR /app
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
-COPY package.json pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-COPY . .
-RUN pnpm run build
-
-###################################################################################
-#
 # SERVER BUILDERS
 #
 ###################################################################################
@@ -52,6 +33,28 @@ RUN cargo chef cook --release --workspace --recipe-path recipe.json
 # Build application
 COPY . .
 RUN cargo build --release --workspace
+
+###################################################################################
+#
+# CLIENT BUILDERS
+#
+###################################################################################
+
+FROM docker.io/node:lts as client-builder
+WORKDIR /app
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm run build
+
+COPY --from=builder /app/target/release/dbost-jobs-precompress /usr/local/bin
+RUN dbost-jobs-precompress --dir /app/dist
 
 ###################################################################################
 #

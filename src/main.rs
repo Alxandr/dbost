@@ -4,6 +4,9 @@ mod auth;
 mod extractors;
 mod web;
 
+#[cfg(feature = "dev")]
+mod dev;
+
 mod built_info {
 	include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
@@ -16,6 +19,7 @@ use axum::{
 	Router,
 };
 use axum_healthcheck::{HealthCheck, ResultHealthStatusExt};
+use cfg_if::cfg_if;
 use dbost_services::auth::{AuthConfig, GithubAuthConfig};
 use dbost_session::{CookieConfig, SessionLayer};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
@@ -33,9 +37,6 @@ use tracing_forest::ForestLayer;
 use tracing_subscriber::{prelude::*, EnvFilter};
 use tvdb_client::TvDbClient;
 use url::Url;
-
-#[cfg(feature = "live-reload")]
-use tower_livereload::LiveReloadLayer;
 
 use crate::assets::BuiltAssets;
 
@@ -179,23 +180,19 @@ async fn axum() -> ! {
 			state.db.clone(),
 		)))
 		.with_state(state)
-		.nest_service("/public", ServeDir::new(web_public_path));
+		.nest_service(
+			"/public",
+			ServeDir::new(web_public_path)
+				.precompressed_br()
+				.precompressed_deflate()
+				.precompressed_gzip()
+				.precompressed_zstd(),
+		);
 
-	#[cfg(feature = "live-reload")]
-	{
-		#[derive(Clone, Copy)]
-		struct NotHxRequestPredicate;
-
-		impl tower_livereload::predicate::Predicate<axum::http::Request<axum::body::Body>>
-			for NotHxRequestPredicate
-		{
-			fn check(&mut self, p: &axum::http::Request<axum::body::Body>) -> bool {
-				!p.headers()
-					.contains_key(&dbost_htmx::headers::request::HX_REQUEST)
-			}
+	cfg_if! {
+		if #[cfg(feature = "dev")] {
+			router = dev::configure(router);
 		}
-
-		router = router.layer(LiveReloadLayer::new().request_predicate(NotHxRequestPredicate));
 	}
 
 	router = router

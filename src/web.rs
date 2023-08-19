@@ -211,7 +211,7 @@ where
 					<meta name="viewport" content="width=device-width, initial-scale=1" />
 					<title>{self.title.as_ref()}" | dBost"</title>
 					<link rel="stylesheet" type="text/css" href=("/public/", assets.css) />
-					<script src=("/public/", assets.js) />
+					<script src=("/public/", assets.js) type="module" />
 				</head>
 				<body>
 					<NavBar user=self.session.user().as_deref() />
@@ -368,7 +368,7 @@ async fn index(
 						{items}
 					</ul>
 					<center>
-						<img class="htmx-indicator" width="60" src="/img/bars.svg" />
+						<img class="htmx-indicator" width="60" src="/public/img/bars.svg" />
 					</center>
 				</Template>
 			)

@@ -12,15 +12,15 @@ bake:
 	depot bake
 
 # start dev server
-run: build-css
-	cargo run --features live-reload
+run: build-assets
+	cargo run --features dev
 
 # seed database
 seed:
 	cargo run --package dbost-jobs-seed
 
 # build for production
-build: build-css
+build: build-assets
 	cargo build --release
 
 # start, and re-start on changes
@@ -28,8 +28,9 @@ watch:
 	cargo watch -s "just run"
 
 # build css
-build-css:
+build-assets:
 	pnpm run build
+	RUST_LOG=warn cargo run -p dbost-jobs-precompress -- --dir dist
 
 # deploy to shuttle
 deploy: build
