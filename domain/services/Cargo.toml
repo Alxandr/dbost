@@ -22,7 +22,7 @@ openidconnect = { version = "3.3.0", default-features = false, features = [
 	"reqwest",
 ] }
 sea-orm = { version = "0.12.2", default-features = false }
-serde = { version = "1.0.171", default-features = false, features = [
+serde = { version = "1.0.183", default-features = false, features = [
 	"std",
 	"rc",
 	"derive",
