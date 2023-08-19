@@ -47,6 +47,30 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -58,18 +82,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/bake-action@v3
         env:
           GIT_SHA: ${{ github.sha }}
           version: ${{ github.sha }}
-        with:
-          push: ${{ github.ref == 'refs/heads/main' }}
-          files: docker-bake.hcl
-
-      # - name: Tag images
-      #   shell: bash
-      #   run: |
-      #     docker buildx imagetools
+          _EXPERIMENTAL_DAGGER_CACHE_CONFIG: "type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
+        run: pnpm exec tsx ci/index.mts
 
   deploy:
     runs-on: ubuntu-latest

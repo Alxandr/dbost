@@ -9,7 +9,7 @@ migrations-proj := "domain/migrations"
 
 # build everything on depot
 bake:
-	depot bake
+	sudo pnpm exec tsx ci/index.mts
 
 # start dev server
 run: build-assets
