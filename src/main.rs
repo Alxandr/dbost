@@ -1,4 +1,5 @@
 mod api;
+mod assets;
 mod auth;
 mod extractors;
 mod web;
@@ -35,6 +36,8 @@ use url::Url;
 
 #[cfg(feature = "live-reload")]
 use tower_livereload::LiveReloadLayer;
+
+use crate::assets::BuiltAssets;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -110,6 +113,8 @@ async fn axum() -> ! {
 		.parse::<bool>()
 		.expect("SECURE_COOKIES must be a boolean");
 
+	BuiltAssets::init(&web_public_path).await.unwrap();
+
 	let db = Database::connect(
 		ConnectOptions::new(connection_string)
 			// .sqlx_logging(true)
@@ -174,7 +179,7 @@ async fn axum() -> ! {
 			state.db.clone(),
 		)))
 		.with_state(state)
-		.fallback_service(ServeDir::new(web_public_path));
+		.nest_service("/public", ServeDir::new(web_public_path));
 
 	#[cfg(feature = "live-reload")]
 	{
@@ -206,6 +211,7 @@ async fn axum() -> ! {
 
 	let err = axum::Server::bind(&SocketAddr::V4(addr))
 		.serve(router.into_make_service())
+		.with_graceful_shutdown(ct.cancelled_owned())
 		.await // runs forever(ish)
 		.unwrap_err();
 

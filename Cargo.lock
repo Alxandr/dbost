@@ -1107,6 +1107,7 @@ dependencies = [
  "sea-orm",
  "sea-query",
  "serde",
+ "serde_json",
  "serde_urlencoded",
  "static_assertions",
  "thiserror",

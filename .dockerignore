@@ -1,5 +1,5 @@
 target/
 infrastructure/
 node_modules/
-public/main.css
+dist/
 .git/

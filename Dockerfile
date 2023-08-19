@@ -89,7 +89,7 @@ CMD ["sh", "-c", "/usr/local/bin/dbost-jobs-db-cleanup"]
 # DBOST WEB IMAGE
 FROM runtime as web
 COPY --from=builder /app/target/release/dbost /usr/local/bin
-COPY --from=client-builder /app/public /var/www/public
+COPY --from=client-builder /app/dist /var/www/public
 ENV WEB_PUBLIC_PATH=/var/www/public
 
 EXPOSE 8000
