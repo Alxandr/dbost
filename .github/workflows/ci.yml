@@ -83,10 +83,11 @@ jobs:
 
       - name: Build and push
         env:
+          PUBLISH: "true"
           GIT_SHA: ${{ github.sha }}
-          version: ${{ github.sha }}
-          _EXPERIMENTAL_DAGGER_CACHE_CONFIG: "type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
+          VERSION: ${{ github.sha }}
         run: |
+          export _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
           pnpm i
           pnpm exec tsx ci/index.mts
 

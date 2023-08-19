@@ -81,6 +81,22 @@ connect(
 
 		console.log(`Test output: ${await test.stdout()}`);
 
+		const clippy = builder
+			.pipeline("clippy")
+			.withExec(["rustup", "component", "add", "clippy"])
+			.withExec([
+				"cargo",
+				"clippy",
+				"--workspace",
+				"--release",
+				"--",
+				"-D",
+				"warnings",
+			]);
+
+		console.log(`Clippy output: ${await clippy.stdout()}`);
+		console.log(`Test output: ${await test.stdout()}`);
+
 		const bins = {
 			dbost: builder.file(`out/${DBOST}`),
 			precompress: builder.file(`out/${PRECOMPRESS}`),
@@ -172,6 +188,7 @@ connect(
 				}
 			}
 		} else {
+			console.log(`Skipping publish as $PUBLISH is not set to true`);
 			for (const container of Object.values(images)) {
 				tasks.push(container.sync().then(() => {}));
 			}
