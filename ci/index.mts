@@ -176,25 +176,19 @@ connect(
 			"ghcr.io/alxandr/dbost/db-cleaner": dbCleaner,
 		};
 
-		const tasks: Promise<void>[] = [];
 		if (PUBLISH) {
 			for (const tag of tags) {
 				for (const [name, container] of Object.entries(images)) {
-					tasks.push(
-						container.publish(`${name}:${tag}`).then((name) => {
-							console.log(`Published ${name}`);
-						})
-					);
+					const published = await container.publish(`${name}:${tag}`);
+					console.log(`Published ${published}`);
 				}
 			}
 		} else {
 			console.log(`Skipping publish as $PUBLISH is not set to true`);
 			for (const container of Object.values(images)) {
-				tasks.push(container.sync().then(() => {}));
+				await container.sync();
 			}
 		}
-
-		await Promise.allSettled(tasks);
 	},
 	{ LogOutput: process.stdout }
 );

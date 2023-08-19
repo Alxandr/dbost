@@ -87,6 +87,7 @@ jobs:
           GIT_SHA: ${{ github.sha }}
           VERSION: ${{ github.sha }}
         run: |
+          echo _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
           export _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
           pnpm i
           pnpm exec tsx ci/index.mts
