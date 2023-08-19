@@ -22,14 +22,14 @@ openidconnect = { version = "3.3.0", default-features = false, features = [
 	"reqwest",
 ] }
 sea-orm = { version = "0.12.2", default-features = false }
-serde = { version = "1.0.183", default-features = false, features = [
+serde = { version = "1.0.171", default-features = false, features = [
 	"std",
 	"rc",
 	"derive",
 ] }
 serde_json = "1.0.105"
 thiserror = { version = "1.0.47", default-features = false }
-time = "0.3.25"
+time = "0.3.26"
 tracing = { version = "0.1.37", default-features = false, features = ["std"] }
 tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
 url = { version = "2.4.0", default-features = false }
