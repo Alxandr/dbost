@@ -289,14 +289,14 @@ impl HtmlContent for SeriesCard {
 				id=("series-card-", &*id)
 				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl grid-rows-series-card rounded-box bg-base-100 series-card contain-paint"
 				// style=("view-transition-name: ", "series-", &*id, "-image", ";")
-				hx-view-name=("series-", &*id, "-image")
+				hx-view-transition-name="series-image"
 				{next_page_attr}
 			>
 				<a class="contents" href=("/series/", &*id)>
 					<figure
 						class="series-image rounded-box"
 					>
-						<img src=self.image.as_deref() alt=(&*self.name, " image") referrerpolicy="no-referrer" />
+						<img src=self.image.as_deref() alt="" referrerpolicy="no-referrer" />
 					</figure>
 					<div class="p-4 text-base bg-base-100/80 series-text">
 						<h2 class="card-title text-ellipsis line-clamp-2" hx-disable>{&*self.name}</h2>
@@ -409,8 +409,8 @@ async fn series(
 						<div class="flex-col hero-content lg:flex-row">
 							<figure
 								class="flex-none w-full sm:w-96 contain-paint"
-								// style=("view-transition-name: ", "series-", &*series_id, "-image", ";")
-								hx-view-name=("series-", &*series_id, "-image")
+								style="view-transition-name: series-image;"
+								// hx-view-name=("series-", &*series_id, "-image")
 							>
 								<img
 									src=series.image.as_deref()

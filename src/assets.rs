@@ -3,6 +3,7 @@ use std::{collections::HashMap, path::Path, sync::OnceLock};
 use serde::Deserialize;
 use thiserror::Error;
 use tokio::fs;
+use tracing::info;
 
 #[derive(Clone, Copy)]
 pub struct BuiltAssets {
@@ -41,6 +42,12 @@ impl BuiltAssets {
 			css: css_path,
 			js: js_path,
 		});
+
+		info!(
+			assets.js = js_path,
+			assets.css = css_path,
+			"loaded assets config"
+		);
 
 		Ok(())
 	}

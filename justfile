@@ -26,7 +26,7 @@ build: build-assets
 
 # start, and re-start on changes
 watch:
-	cargo watch -s "just run"
+	NODE_ENV=development DBOST_WATCH=true cargo watch -s "just run"
 
 # build css
 build-assets:

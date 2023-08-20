@@ -12,11 +12,35 @@ declare module "htmx.org" {
 	}
 }
 
+declare global {
+	export interface CSSStyleDeclaration {
+		viewTransitionName: string;
+	}
+}
+
 htmx.config.allowEval = false;
 htmx.config.useTemplateFragments = true;
 htmx.config.globalViewTransitions = true;
 // htmx.logAll();
 
+htmx.on("htmx:beforeTransition", (e) => {
+	const { target } = e as { target: HTMLElement | null };
+	if (!target) return;
+
+	const viewTransitionItem = target.closest<HTMLElement>(
+		"[hx-view-transition-name]"
+	);
+	if (!viewTransitionItem) return;
+
+	const viewTransitionName = viewTransitionItem.getAttribute(
+		"hx-view-transition-name"
+	)!;
+	// console.log(
+	// 	`Found view transition item (${viewTransitionName}):`,
+	// 	viewTransitionItem
+	// );
+	viewTransitionItem.style.viewTransitionName = viewTransitionName;
+});
 // htmx.on("htmx:afterProcessNode", (e) => {
 // 	const { target } = e as { target: HTMLElement | null };
 // 	if (target) {
