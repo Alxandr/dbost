@@ -68,6 +68,4 @@ resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
       }
     }
   }
-
-  depends_on = [aws_iam_policy_document.ecs_agent_trust]
 }
