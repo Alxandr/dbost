@@ -71,5 +71,13 @@ resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
     retry_policy {
       maximum_retry_attempts = 2
     }
+
+    dead_letter_config {
+      arn = aws_sqs_queue.dbost_db_schedule_dlq.arn
+    }
   }
+}
+
+resource "aws_sqs_queue" "dbost_db_schedule_dlq" {
+  name = "dbost-db-schedule-dlq"
 }
