@@ -114,7 +114,7 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 
 pub fn dbost_cron(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBuilder> {
 	let db_cleaner = ContainerDefinition {
-		name: "dbost-db-migrator",
+		name: "dbost-db-cleaner",
 		image: "ghcr.io/alxandr/dbost/db-cleaner",
 		essential: true,
 		ro_fs: true,

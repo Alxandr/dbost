@@ -42,7 +42,7 @@ resource "aws_ecs_service" "dbost" {
 ##### CLOUDWATCH SCHEDULE #####
 resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
   name                = "dbost-db-clean-schedule"
-  schedule_expression = "rate(6 hours)"
+  schedule_expression = "rate(15 minutes)"
   description         = "Cleans dbost database every 6 hours"
   # role_arn            = var.event_rule_role_arn
   # is_enabled = true
@@ -62,9 +62,9 @@ resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
       launch_type         = "FARGATE"
 
       network_configuration {
-        subnets         = module.vpc.public_subnets
-        security_groups = [aws_security_group.public.id]
-        # assign_public_ip = true
+        subnets          = module.vpc.public_subnets
+        security_groups  = [aws_security_group.public.id]
+        assign_public_ip = true
       }
     }
 
