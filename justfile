@@ -9,8 +9,13 @@ migrations-proj := "domain/migrations"
 	just --list
 
 # build everything on depot
-bake:
-	_EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=local,dest={{cache-dir}},src={{cache-dir}},mode=max,compression=zstd" sudo pnpm exec tsx ci/index.mts
+@bake:
+	sudo just _bake
+
+[private]
+_bake:
+	export _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=local,dest={{cache-dir}},src={{cache-dir}},mode=max,compression=zstd"
+	pnpm exec tsx ci/index.mts
 
 # start dev server
 run: build-assets

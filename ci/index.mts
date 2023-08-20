@@ -1,5 +1,7 @@
 import { Client, connect } from "@dagger.io/dagger";
 import * as cache from "@actions/cache";
+import { getSccache } from "./sccache.mjs";
+import { runtime as runtimeContainer } from "./runtime.mjs";
 
 const logCacheInfo = () => {
 	if (!cache.isFeatureAvailable()) {
@@ -33,6 +35,7 @@ const executables = [
 // initialize Dagger client
 await connect(
 	async (client: Client) => {
+		const sccache = getSccache(client);
 		const pnpmCache = client.cacheVolume("pnpm");
 		const targetCache = client.cacheVolume("target");
 
@@ -50,7 +53,8 @@ await connect(
 				"apt-get update && apt-get install -y curl ca-certificates clang && rm -rf /var/lib/apt/lists/*",
 			])
 			.withEnvVariable("CARGO_TERM_COLOR", "always")
-			.withWorkdir("/app");
+			.withWorkdir("/app")
+			.with(sccache.install);
 
 		const recipe = chef
 			.withDirectory(".", sources, {
@@ -69,6 +73,7 @@ await connect(
 			.pipeline("build")
 			.withFile("recipe.json", recipe)
 			.withMountedCache("target", targetCache)
+			.withExec(["sh", "-c", "echo $RUSTC_WRAPPER"])
 			.withExec([
 				"cargo",
 				"chef",
@@ -93,9 +98,7 @@ await connect(
 			.pipeline("test")
 			.withExec(["cargo", "test", "--workspace", "--release"]);
 
-		console.log(`Test output: ${await test.stdout()}`);
-
-		const clippy = builder
+		const clippy = test
 			.pipeline("clippy")
 			.withExec(["rustup", "component", "add", "clippy"])
 			.withExec([
@@ -108,8 +111,9 @@ await connect(
 				"warnings",
 			]);
 
-		console.log(`Clippy output: ${await clippy.stdout()}`);
-		console.log(`Test output: ${await test.stdout()}`);
+		const clippyOutput = await clippy.stdout();
+		const testOutput = await test.stdout();
+		const sccacheStats = await sccache.stats(clippy);
 
 		const bins = {
 			dbost: builder.file(`out/${DBOST}`),
@@ -142,12 +146,7 @@ await connect(
 		const runtime = client
 			.pipeline("runtime")
 			.container()
-			.from("docker.io/debian:bookworm-slim")
-			.withExec([
-				"sh",
-				"-c",
-				"apt-get update && apt-get install -y curl tini && rm -rf /var/lib/apt/lists/*",
-			])
+			.with(runtimeContainer)
 			.withEntrypoint(["tini", "--"]);
 
 		const deployer = runtime
@@ -203,6 +202,10 @@ await connect(
 				await container.sync();
 			}
 		}
+
+		console.log(`Clippy output: ${clippyOutput}`);
+		console.log(`Test output: ${testOutput}`);
+		if (sccacheStats) console.log(`Sccache stats: ${sccacheStats}`);
 	},
 	{ LogOutput: process.stdout }
 );

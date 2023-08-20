@@ -26,6 +26,10 @@ jobs:
         with:
           node-version: lts/*
 
+      # this fixes some caching issues in later stpes
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
+
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         with:
