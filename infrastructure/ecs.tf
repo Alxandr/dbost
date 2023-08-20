@@ -38,3 +38,12 @@ resource "aws_ecs_service" "dbost" {
     ignore_changes = [task_definition]
   }
 }
+
+##### CLOUDWATCH SCHEDULE #####
+resource "aws_cloudwatch_event_rule" "dbost_schedule" {
+  name                = "dbost-schedule"
+  schedule_expression = "rate(6 hours)"
+  description         = "Cleans dbost database every 6 hours"
+  # role_arn            = var.event_rule_role_arn
+  is_enabled = true
+}
