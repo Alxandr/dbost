@@ -42,7 +42,7 @@ resource "aws_ecs_service" "dbost" {
 ##### CLOUDWATCH SCHEDULE #####
 resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
   name                = "dbost-db-clean-schedule"
-  schedule_expression = "rate(15 minutes)"
+  schedule_expression = "rate(6 hours)"
   description         = "Cleans dbost database every 6 hours"
   # role_arn            = var.event_rule_role_arn
   # is_enabled = true
