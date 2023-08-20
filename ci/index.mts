@@ -1,4 +1,18 @@
 import { Client, connect } from "@dagger.io/dagger";
+import * as cache from "@actions/cache";
+
+const logCacheInfo = () => {
+	if (!cache.isFeatureAvailable()) {
+		console.log(`github caching is not available`);
+	} else {
+		console.log({
+			cacheUrl: process.env["ACTIONS_CACHE_URL"],
+			runtimeToken: process.env["ACTIONS_RUNTIME_TOKEN"],
+		});
+	}
+};
+
+logCacheInfo();
 
 const PUBLISH = process.env.PUBLISH === "true";
 const VERSION = process.env.VERSION || "latest";
@@ -17,7 +31,7 @@ const executables = [
 ] as const;
 
 // initialize Dagger client
-connect(
+await connect(
 	async (client: Client) => {
 		const pnpmCache = client.cacheVolume("pnpm");
 		const targetCache = client.cacheVolume("target");
@@ -192,3 +206,5 @@ connect(
 	},
 	{ LogOutput: process.stdout }
 );
+
+logCacheInfo();

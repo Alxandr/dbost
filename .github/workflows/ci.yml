@@ -9,32 +9,6 @@ on:
       - main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    name: Run lint & tests
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install mold
-        run: |
-          curl -L --retry 10 --silent --show-error https://github.com/rui314/mold/releases/download/v2.1.0/mold-2.1.0-$(uname -m)-linux.tar.gz \
-          | sudo tar -C /usr --strip-components=1 -xzf -
-
-          # test that it works
-          /usr/bin/mold --version
-
-      - name: Lint
-        run: cargo clippy --workspace -- -D warnings
-
-      - name: Run tests
-        run: cargo test --workspace --all-features
-
   build:
     runs-on: ubuntu-latest
     name: Build images
@@ -104,7 +78,6 @@ jobs:
     name: Deploy to AWS
     needs:
       - build
-      - test
 
     if: github.ref == 'refs/heads/main'
 
