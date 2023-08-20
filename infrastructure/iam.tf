@@ -72,7 +72,8 @@ data "aws_iam_policy_document" "esc_agent_start_task" {
       "ecs:RunTask",
     ]
     resources = [
-      aws_ecs_cluster.cluster.arn
+      aws_ecs_cluster.cluster.arn,
+      data.aws_ecs_task_definition.dbost_db_cleaner.arn_without_revision,
     ]
     effect = "Allow"
   }
