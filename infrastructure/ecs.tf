@@ -5,11 +5,11 @@ resource "aws_ecs_cluster" "cluster" {
 
 ##### dBost task (service) definition #####
 data "aws_ecs_task_definition" "dbost" {
-  family = "dbost"
+  task_definition = "dbost"
 }
 
 data "aws_ecs_task_definition" "dbost_db_cleaner" {
-  family = "dbost-db-cleaner"
+  task_definition = "dbost-db-cleaner"
 }
 
 ##### AWS ECS-SERVICE #####
