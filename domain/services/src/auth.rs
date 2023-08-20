@@ -302,7 +302,7 @@ impl AuthService {
 			.http_only(true)
 			.path(self.config.base_path().to_owned())
 			.secure(self.config.secure())
-			.same_site(SameSite::Strict)
+			.same_site(SameSite::Lax)
 			.max_age(Duration::minutes(15))
 			.finish();
 

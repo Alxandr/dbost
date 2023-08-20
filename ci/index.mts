@@ -86,6 +86,7 @@ await connect(
 			.withDirectory(".", sources, {
 				include: ["**/Cargo.toml", "Cargo.lock", "**/*.rs"],
 			})
+			.withEnvVariable("GIT_SHA", VERSION)
 			.withExec(["cargo", "build", "--release", "--workspace"])
 			.withExec(["mkdir", "-p", "out"])
 			.withExec([
