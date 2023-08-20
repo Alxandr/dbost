@@ -187,7 +187,7 @@ where
 
 		write_html!(formatter,
 			<!DOCTYPE html>
-			<html>
+			<html hx-boost="true">
 				<head>
 					<meta charset="UTF-8" />
 					<link rel="apple-touch-icon" sizes="57x57" href="/public/icon/apple-icon-57x57.png">
@@ -287,14 +287,14 @@ impl HtmlContent for SeriesCard {
 		write_html!(formatter,
 			<li
 				id=("series-card-", &*id)
-				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid"
+				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid series-card"
 				{next_page_attr}>
 				<a class="contents" href=("/series/", &*id)>
-					<figure style="grid-row: 1 / span 2; grid-column: 1 / 1;">
+					<figure class="series-image">
 						<img src=self.image.as_deref() alt=(&*self.name, " image") referrerpolicy="no-referrer" />
 					</figure>
-					<div class="p-4 text-base bg-base-100/80" style="grid-row: 2 / span 1; grid-column: 1 / 1;">
-						<h2 class="card-title">{self.name}</h2>
+					<div class="p-4 text-base bg-base-100/80 series-text">
+						<h2 class="card-title" hx-disable>{self.name}</h2>
 						<p>"Seasons: " {self.season_count}</p>
 					</div>
 				</a>
@@ -353,11 +353,11 @@ async fn index(
 	};
 
 	match hx {
-		Some(_) => {
+		Some(hx) if !hx.boosted => {
 			// tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 			Ok(Html(items).into_response())
 		},
-		None => Ok(Html::from_fn(move |f| {
+		_ => Ok(Html::from_fn(move |f| {
 			write_html!(f,
 				<Template title="Series" session=session>
 					<h1 class="mb-8 text-4xl font-bold">Series</h1>
@@ -401,7 +401,7 @@ async fn series(
 				<Template title=&*series.name session=session>
 					<div class="rounded-lg min-h-72 hero">
 						<div class="flex-col hero-content lg:flex-row">
-							<figure class="flex-none w-full sm:w-96">
+							<figure class="flex-none w-full sm:w-96 series-image">
 								<img
 									src=series.image.as_deref()
 									class="rounded-lg shadow-2xl"
@@ -410,7 +410,7 @@ async fn series(
 							</figure>
 							<div class="flex-1">
 								<h1 class="text-5xl font-bold">{&*series.name}</h1>
-								<p class="py-6">{series.description.as_deref()}</p>
+								<p class="py-6" hx-disable>{series.description.as_deref()}</p>
 							</div>
 						</div>
 					</div>
@@ -426,7 +426,9 @@ async fn series(
 										id=(&*series_id, "/season/", &*season_id)
 										class="flex flex-col gap-4 p-4 rounded-lg sm:flex-row bg-base-200"
 									>
-										<figure class="self-center flex-none w-full sm:self-start sm:w-56">
+										<figure
+											class="self-center flex-none w-full sm:self-start sm:w-56"
+										>
 											<img
 												src=s.image.as_deref().or(series.image.as_deref())
 												class="mx-auto rounded-lg shadow-2xl"
@@ -435,7 +437,7 @@ async fn series(
 										</figure>
 										<div class="flex-1">
 											<h2 class="text-3xl font-bold tooltip" data-tip=&*season_number_display>{season_name}</h2>
-											<p class="py-6">{s.description.as_deref()}</p>
+											<p class="py-6" hx-disable>{s.description.as_deref()}</p>
 										</div>
 									</li>
 								)
