@@ -287,14 +287,19 @@ impl HtmlContent for SeriesCard {
 		write_html!(formatter,
 			<li
 				id=("series-card-", &*id)
-				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl rounded-box bg-base-100 grid-rows-subgrid series-card"
-				{next_page_attr}>
+				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl grid-rows-series-card rounded-box bg-base-100 series-card contain-paint"
+				// style=("view-transition-name: ", "series-", &*id, "-image", ";")
+				hx-view-name=("series-", &*id, "-image")
+				{next_page_attr}
+			>
 				<a class="contents" href=("/series/", &*id)>
-					<figure class="series-image">
+					<figure
+						class="series-image rounded-box"
+					>
 						<img src=self.image.as_deref() alt=(&*self.name, " image") referrerpolicy="no-referrer" />
 					</figure>
 					<div class="p-4 text-base bg-base-100/80 series-text">
-						<h2 class="card-title" hx-disable>{self.name}</h2>
+						<h2 class="card-title text-ellipsis line-clamp-2" hx-disable>{&*self.name}</h2>
 						<p>"Seasons: " {self.season_count}</p>
 					</div>
 				</a>
@@ -323,6 +328,7 @@ async fn index(
 		.column(series::Column::Image)
 		.column_as(season::Column::Id.count(), "season_count")
 		.join(JoinType::LeftJoin, series::Relation::Season.def())
+		.filter(season::Column::Number.ne(0))
 		.group_by(series::Column::Id)
 		.order_by_asc(series::Column::Name)
 		.into_model::<SeriesCardDb>()
@@ -401,7 +407,11 @@ async fn series(
 				<Template title=&*series.name session=session>
 					<div class="rounded-lg min-h-72 hero">
 						<div class="flex-col hero-content lg:flex-row">
-							<figure class="flex-none w-full sm:w-96 series-image">
+							<figure
+								class="flex-none w-full sm:w-96 contain-paint"
+								// style=("view-transition-name: ", "series-", &*series_id, "-image", ";")
+								hx-view-name=("series-", &*series_id, "-image")
+							>
 								<img
 									src=series.image.as_deref()
 									class="rounded-lg shadow-2xl"

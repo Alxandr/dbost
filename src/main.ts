@@ -16,3 +16,13 @@ htmx.config.allowEval = false;
 htmx.config.useTemplateFragments = true;
 htmx.config.globalViewTransitions = true;
 // htmx.logAll();
+
+// htmx.on("htmx:afterProcessNode", (e) => {
+// 	const { target } = e as { target: HTMLElement | null };
+// 	if (target) {
+// 		const viewName = target.getAttribute("hx-view-name");
+// 		if (viewName) {
+// 			(target.style as any).viewTransitionName = viewName;
+// 		}
+// 	}
+// });
