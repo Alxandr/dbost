@@ -17,6 +17,15 @@ data "aws_iam_policy_document" "ecs_agent_trust" {
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+  }
 }
 
 data "aws_iam_policy_document" "ecs_agent_read_secrets" {
