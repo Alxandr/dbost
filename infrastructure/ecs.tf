@@ -40,10 +40,32 @@ resource "aws_ecs_service" "dbost" {
 }
 
 ##### CLOUDWATCH SCHEDULE #####
-resource "aws_cloudwatch_event_rule" "dbost_schedule" {
-  name                = "dbost-schedule"
+resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
+  name                = "dbost-db-clean-schedule"
   schedule_expression = "rate(6 hours)"
   description         = "Cleans dbost database every 6 hours"
   # role_arn            = var.event_rule_role_arn
-  is_enabled = true
+  # is_enabled = true
+
+  flexible_time_window {
+    mode                      = "FLEXIBLE"
+    maximum_window_in_minutes = 30
+  }
+
+  target {
+    arn      = aws_ecs_cluster.cluster.arn
+    role_arn = aws_iam_role.ecs_agent.arn
+
+    ecs_parameters {
+      task_count          = 1
+      task_definition_arn = data.aws_ecs_task_definition.dbost_db_cleaner.arn_without_revision
+      launch_type         = "FARGATE"
+
+      network_configuration {
+        subnets         = module.vpc.public_subnets
+        security_groups = [aws_security_group.public.id]
+        # assign_public_ip = true
+      }
+    }
+  }
 }
