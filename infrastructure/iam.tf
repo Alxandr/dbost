@@ -77,6 +77,16 @@ data "aws_iam_policy_document" "esc_agent_start_task" {
     ]
     effect = "Allow"
   }
+
+  statement {
+    actions = [
+      "iam:PassRole"
+    ]
+    resources = [
+      aws_iam_role.ecs_agent.arn
+    ]
+    effect = "Allow"
+  }
 }
 
 resource "aws_iam_role" "ecs_agent" {
