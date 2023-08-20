@@ -58,3 +58,6 @@ podman-build:
 # run image using podman
 podman-run:
 	podman run --rm -it -p 8000:8000 --env-host --env WEB_PUBLIC_PATH=/var/www/public localhost/alxandr/dbost
+
+verify-terraform:
+	cd infrastructure && terraform validate

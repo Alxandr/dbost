@@ -54,6 +54,30 @@ data "aws_iam_policy_document" "ecs_agent_read_secrets" {
   }
 }
 
+data "aws_iam_policy_document" "esc_agent_write_dlq_message" {
+  statement {
+    actions = [
+      "sqs:SendMessage",
+    ]
+    resources = [
+      aws_sqs_queue.dbost_db_schedule_dlq.arn,
+    ]
+    effect = "Allow"
+  }
+}
+
+data "aws_iam_policy_document" "esc_agent_start_task" {
+  statement {
+    actions = [
+      "ecs:RunTask",
+    ]
+    resources = [
+      aws_ecs_cluster.cluster.arn
+    ]
+    effect = "Allow"
+  }
+}
+
 resource "aws_iam_role" "ecs_agent" {
   name               = "ecs-agent"
   assume_role_policy = data.aws_iam_policy_document.ecs_agent_trust.json
@@ -81,7 +105,29 @@ resource "aws_iam_policy" "ecs_agent_read_secrets" {
   policy      = data.aws_iam_policy_document.ecs_agent_read_secrets.json
 }
 
+resource "aws_iam_policy" "esc_agent_write_dlq_message" {
+  name        = "write-dbost-dlq-messages"
+  description = "Write dBost DLQ messages"
+  policy      = data.aws_iam_policy_document.esc_agent_write_dlq_message.json
+}
+
+resource "aws_iam_policy" "esc_agent_start_task" {
+  name        = "start-dbost-tasks"
+  description = "Start dBost tasks"
+  policy      = data.aws_iam_policy_document.esc_agent_start_task.json
+}
+
 resource "aws_iam_role_policy_attachment" "ecs_agent_read_secrets" {
   role       = aws_iam_role.ecs_agent.name
   policy_arn = aws_iam_policy.ecs_agent_read_secrets.arn
+}
+
+resource "aws_iam_role_policy_attachment" "esc_agent_write_dlq_message" {
+  role       = aws_iam_role.ecs_agent.name
+  policy_arn = aws_iam_policy.esc_agent_write_dlq_message.arn
+}
+
+resource "aws_iam_role_policy_attachment" "esc_agent_start_task" {
+  role       = aws_iam_role.ecs_agent.name
+  policy_arn = aws_iam_policy.esc_agent_start_task.arn
 }
