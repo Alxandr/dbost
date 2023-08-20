@@ -79,5 +79,6 @@ resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
 }
 
 resource "aws_sqs_queue" "dbost_db_schedule_dlq" {
-  name = "dbost-db-schedule-dlq"
+  name                      = "dbost-db-schedule-dlq"
+  message_retention_seconds = 60 * 60 * 24 * 7 # 7 days
 }
