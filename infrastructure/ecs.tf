@@ -67,5 +67,9 @@ resource "aws_scheduler_schedule" "dbost_db_clean_schedule" {
         # assign_public_ip = true
       }
     }
+
+    retry_policy {
+      maximum_retry_attempts = 2
+    }
   }
 }
