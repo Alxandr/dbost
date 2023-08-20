@@ -63,6 +63,8 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
+      - run: echo "cache info? $ACTIONS_CACHE_URL $ACTIONS_RUNTIME_TOKEN"
+
       - uses: actions/cache@v3
         name: Setup pnpm cache
         with:
@@ -87,8 +89,13 @@ jobs:
           GIT_SHA: ${{ github.sha }}
           VERSION: ${{ github.sha }}
         run: |
-          echo _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
-          export _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
+          if [[ -z "$ACTIONS_CACHE_URL" ]]; then
+            echo "ACTIONS_CACHE_URL is not set, skipping cache"
+          else
+            echo "ACTIONS_CACHE_URL is set, using cache"
+            export _EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN"
+          fi
+
           pnpm i
           pnpm exec tsx ci/index.mts
 

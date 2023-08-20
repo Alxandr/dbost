@@ -1,5 +1,6 @@
 set dotenv-load
 
+cache-dir       := join(justfile_directory(), ".cache")
 entities-proj   := "domain/entities"
 migrations-proj := "domain/migrations"
 
@@ -9,7 +10,7 @@ migrations-proj := "domain/migrations"
 
 # build everything on depot
 bake:
-	sudo pnpm exec tsx ci/index.mts
+	_EXPERIMENTAL_DAGGER_CACHE_CONFIG="type=local,dest={{cache-dir}},src={{cache-dir}},mode=max,compression=zstd" sudo pnpm exec tsx ci/index.mts
 
 # start dev server
 run: build-assets

@@ -1,7 +1,6 @@
 use crate::{artworks::ArtworkKind, TvDbClient, TvDbError, TvDbUrl};
 use async_trait::async_trait;
 use futures::{stream::FuturesUnordered, StreamExt};
-use itertools::Itertools;
 use reqwest::Response;
 use serde::Deserialize;
 use tracing::{error, info, info_span, instrument, Instrument};
@@ -12,6 +11,8 @@ struct SeriesDto {
 	name: String,
 	#[serde(default)]
 	overview: Option<String>,
+	#[serde(default)]
+	image: Option<String>,
 	seasons: Vec<SeriesSeasonDto>,
 	#[serde(default, deserialize_with = "nullable_vec", alias = "artwork")]
 	artworks: Vec<ArtworkDto>,
@@ -42,13 +43,14 @@ struct SeriesSeasonDto {
 
 #[derive(Deserialize, Debug)]
 struct SeasonDto {
-	// id: u64,
 	#[serde(default)]
 	name: Option<String>,
 	#[serde(default)]
 	overview: Option<String>,
 	#[serde(default)]
 	translations: TranslationsDto,
+	#[serde(default)]
+	image: Option<String>,
 	#[serde(default, deserialize_with = "nullable_vec", alias = "artwork")]
 	artworks: Vec<ArtworkDto>,
 }
@@ -175,7 +177,7 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 		})
 		.or(season.overview);
 
-	let image = get_image(season.artworks, ArtworkKind::SeasonPoster);
+	let image = get_image(season.image, season.artworks, ArtworkKind::SeasonPoster);
 	Ok(Season {
 		id,
 		number,
@@ -185,14 +187,30 @@ async fn get_season(season: SeriesSeasonDto, client: &TvDbClient) -> Result<Seas
 	})
 }
 
-fn get_image(artworks: Vec<ArtworkDto>, kind: ArtworkKind) -> Option<String> {
-	let artworks = artworks
+fn get_image(
+	image: Option<String>,
+	artworks: Vec<ArtworkDto>,
+	kind: ArtworkKind,
+) -> Option<String> {
+	let mut artworks = artworks
 		.into_iter()
-		.filter(|a| a.kind == kind)
-		.sorted_by_key(|a| a.score)
-		.collect_vec();
+		.filter(|a| a.image.is_some())
+		.filter(|a| a.kind == kind);
 
-	artworks.into_iter().filter_map(|a| a.image).next()
+	// if the "item.image" is included in the set, use it, else pick the one with the highest score
+	let mut max_score = match artworks.next() {
+		None => return None,
+		Some(artwork) if artwork.image == image => return image,
+		Some(artwork) => artwork,
+	};
+
+	for artwork in artworks {
+		if artwork.score > max_score.score {
+			max_score = artwork;
+		}
+	}
+
+	max_score.image
 }
 
 #[instrument(skip(client))]
@@ -208,7 +226,7 @@ pub(crate) async fn get_series(id: u64, client: &TvDbClient) -> Result<Option<Se
 
 	let series = response.json::<ResultDto<SeriesDto>>().await?.data;
 	let id = series.id;
-	let image = get_image(series.artworks, ArtworkKind::SeriesPoster);
+	let image = get_image(series.image, series.artworks, ArtworkKind::SeriesPoster);
 	let name = series
 		.translations
 		.name_translations
