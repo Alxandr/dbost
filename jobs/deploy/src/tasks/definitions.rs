@@ -74,6 +74,11 @@ pub fn dbost_service(builder: TaskDefinitionBuilder) -> Result<TaskDefinitionBui
 				field: "session_key",
 			},
 			Secret {
+				name: "CSRF_KEY",
+				secret: "dbost_web",
+				field: "csrf_key",
+			},
+			Secret {
 				name: "API_KEY",
 				secret: "dbost_web",
 				field: "api_key",

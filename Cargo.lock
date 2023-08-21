@@ -1258,12 +1258,21 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "axum",
+ "base64 0.21.2",
+ "bincode",
  "cookie",
+ "crypto-common",
  "dbost-entities",
  "dbost-utils",
+ "digest",
  "futures",
+ "hmac",
  "http",
+ "pbkdf2",
+ "rand",
  "sea-orm",
+ "serde",
+ "sha2",
  "thiserror",
  "time",
  "tower-layer",
@@ -2413,6 +2422,16 @@ name = "paste"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c"
+
+[[package]]
+name = "pbkdf2"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8ed6a7761f76e3b9f92dfb0a60a6a6477c61024b775147ff0973a02653abaf2"
+dependencies = [
+ "digest",
+ "hmac",
+]
 
 [[package]]
 name = "pem-rfc7468"

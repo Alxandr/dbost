@@ -1,3 +1,4 @@
+mod csrf;
 mod store;
 
 use arc_swap::ArcSwapOption;
@@ -60,6 +61,17 @@ pub struct Session {
 	inner: Arc<SessionInner>,
 }
 
+#[derive(Clone)]
+pub struct CsrfToken {
+	inner: Arc<str>,
+}
+
+impl AsRef<str> for CsrfToken {
+	fn as_ref(&self) -> &str {
+		&self.inner
+	}
+}
+
 #[async_trait]
 impl<S> FromRequestParts<S> for Session {
 	type Rejection = Infallible;
@@ -98,19 +110,35 @@ impl Session {
 	}
 }
 
-#[derive(Clone)]
-pub struct SessionLayer {
-	key: Key,
-	cookie: Arc<CookieConfig>,
+struct SessionConfig {
+	session_key: Key,
+	csrf_key: Box<[u8]>,
+	cookie: CookieConfig,
 	db: DatabaseConnection,
 }
 
+#[derive(Clone)]
+pub struct SessionLayer {
+	config: Arc<SessionConfig>,
+}
+
 impl SessionLayer {
+	#[instrument(skip_all, name = "SessionLayer::new")]
 	pub fn new(master_key: &str, cookie: CookieConfig, db: DatabaseConnection) -> Self {
-		Self {
-			key: Key::derive_from(master_key.as_bytes()),
-			cookie: Arc::new(cookie),
+		let session_key =
+			pbkdf2::pbkdf2_hmac_array::<sha2::Sha256, 128>(master_key.as_ref(), b"session", 60_000);
+		let csrf_key =
+			pbkdf2::pbkdf2_hmac_array::<sha2::Sha256, 128>(master_key.as_ref(), b"csrf", 60_000);
+
+		let config = SessionConfig {
+			session_key: Key::derive_from(&session_key),
+			csrf_key: csrf_key.into(),
+			cookie,
 			db,
+		};
+
+		Self {
+			config: Arc::new(config),
 		}
 	}
 }
@@ -120,9 +148,7 @@ impl<S> Layer<S> for SessionLayer {
 
 	fn layer(&self, inner: S) -> Self::Service {
 		SessionService {
-			key: self.key.clone(),
-			cookie: self.cookie.clone(),
-			db: self.db.clone(),
+			config: self.config.clone(),
 			inner,
 		}
 	}
@@ -130,9 +156,7 @@ impl<S> Layer<S> for SessionLayer {
 
 #[derive(Clone)]
 pub struct SessionService<S> {
-	key: Key,
-	cookie: Arc<CookieConfig>,
-	db: DatabaseConnection,
+	config: Arc<SessionConfig>,
 	inner: S,
 }
 
@@ -147,7 +171,7 @@ impl<S> SessionService<S> {
 		<S as Service<Request<B>>>::Future: Send,
 		B: Send + 'static,
 	{
-		let store = CookieStore::new(req.headers(), self.key.clone());
+		let store = CookieStore::new(req.headers(), self.config.session_key.clone());
 
 		let session = match self.get_or_create_session(&store).await {
 			Ok(v) => v,
@@ -157,10 +181,24 @@ impl<S> SessionService<S> {
 			}
 		};
 
+		let csrf_token = match csrf::get_or_create_csrf_token(
+			&session,
+			&store,
+			&self.config.csrf_key,
+			self.config.cookie.secure,
+		) {
+			Ok(v) => v,
+			Err(e) => {
+				error!("failed to get or create csrf token: {e:#?}");
+				return Ok((StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response());
+			}
+		};
+
 		let has_user = session.user().is_some();
 		let span = info_span!("session", session.id = %session.id());
 		req.extensions_mut().insert(session.clone());
 		req.extensions_mut().insert(store.clone());
+		req.extensions_mut().insert(csrf_token);
 		let mut res = span
 			.in_scope(|| self.inner.call(req))
 			.instrument(span)
@@ -173,7 +211,7 @@ impl<S> SessionService<S> {
 		if session.is_deleted() {
 			jar.remove(
 				Cookie::build(COOKIE_NAME, "")
-					.path(self.cookie.path.clone())
+					.path(self.config.cookie.path.clone())
 					.finish(),
 			);
 		} else if !has_user && has_user_after_request {
@@ -207,13 +245,13 @@ impl<S> SessionService<S> {
 		};
 
 		let model = session::Entity::insert(model)
-			.exec_with_returning(&self.db)
+			.exec_with_returning(&self.config.db)
 			.await?;
 
 		debug!(session.id = %model.id, "created new session");
 		let cookie = Cookie::build(COOKIE_NAME, model.id.to_string())
 			.http_only(true)
-			.apply(&self.cookie)
+			.apply(&self.config.cookie)
 			.expires(model.etime.assume_utc())
 			.same_site(SameSite::Strict)
 			.finish();
@@ -240,10 +278,10 @@ impl<S> SessionService<S> {
 		model.atime = ActiveValue::Set(now.into_primitive_utc());
 		model.etime = ActiveValue::Set((now + expiry).into_primitive_utc());
 
-		let model = session::Entity::update(model).exec(&self.db).await?;
+		let model = session::Entity::update(model).exec(&self.config.db).await?;
 
 		debug!(session.id = %model.id, "updated session expiry");
-		let mut new_cookie = cookie.clone().apply(&self.cookie);
+		let mut new_cookie = cookie.clone().apply(&self.config.cookie);
 
 		new_cookie.set_expires(model.etime.assume_utc());
 
@@ -268,7 +306,7 @@ impl<S> SessionService<S> {
 					self.create_session(now, jar).await?
 				}
 				Some(id) => {
-					match session::Entity::find_by_id(id).one(&self.db).await? {
+					match session::Entity::find_by_id(id).one(&self.config.db).await? {
 						None => {
 							debug!("session with id '{id}' not found in db");
 							self.create_session(now, jar).await?
@@ -290,7 +328,7 @@ impl<S> SessionService<S> {
 
 		let user = match session.user_id {
 			None => None,
-			Some(id) => user::Entity::find_by_id(id).one(&self.db).await?,
+			Some(id) => user::Entity::find_by_id(id).one(&self.config.db).await?,
 		};
 
 		let session = Session {
