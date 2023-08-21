@@ -103,15 +103,14 @@ provider "registry.terraform.io/hashicorp/random" {
 }
 
 provider "registry.terraform.io/spacelift-io/spacelift" {
-  version     = "1.1.8"
+  version     = "1.1.9"
   constraints = "~> 1.1"
   hashes = [
-    "h1:D7qnDlB5MkYyyKVLXHpvNHAsGhv5hh6gjzDRYLGgXg0=",
-    "zh:212e2f45cc99e615982c877d9bb61445ef8df282169796846b4464c2baf986b6",
-    "zh:4040f882572c998f4d02295d8b329b96aed52b6005fbec8fbd6642027ae896c1",
-    "zh:c72ec4d0b7d58bceaf53dcf9f74eec2a9388838fc6c0185f9d93c5a7268d4b87",
-    "zh:d907e85b684f6d88e7624327d5b817fee150006f3575516c6df4e7cd9e06773c",
-    "zh:ebcfc9755535140a12c6a21ac855f35d675278d074d2e764e071516cc51802e5",
-    "zh:fe8419947252fd7cd7522a714c962c7cf2a79e2d885ddb0af98b354196987f3c",
+    "h1:2yLINmtptT1kQvv70f3ET0Nfe4qQHda7rDaTIXIvwvY=",
+    "h1:6pPuSXorHsDx/hvdQS2tf562KY1LMDS3t+2No/caFas=",
+    "h1:8nXXMZKzW0/nKPXCIA3znF+T8vTVIf9bGZ5T66wP6zU=",
+    "h1:ZIOYAx2VRQnParY0EPveqB4hCAX9m0cKixu/4HicxBs=",
+    "h1:brydfvAwWqkdG1xYsOPj97qouMndYBaTHQOc0BB81Qw=",
+    "h1:rIn9O0Klran8H6pHaXyiAvJbMjHnrlqxjMjEoyF4P/Q=",
   ]
 }
