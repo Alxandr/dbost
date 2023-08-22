@@ -99,6 +99,7 @@ fn create_csrf_token(
 		.http_only(true)
 		.same_site(cookie::SameSite::Strict)
 		.secure(config.secure)
+		.path("/")
 		.finish();
 
 	store.add(cookie);
