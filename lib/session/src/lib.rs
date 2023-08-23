@@ -253,7 +253,7 @@ impl<S> SessionService<S> {
 			.http_only(true)
 			.apply(&self.config.cookie)
 			.expires(model.etime.assume_utc())
-			.same_site(SameSite::Strict)
+			.same_site(SameSite::Lax)
 			.finish();
 
 		jar.add(cookie);

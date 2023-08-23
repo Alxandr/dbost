@@ -24,8 +24,12 @@ htmx.config.globalViewTransitions = true;
 // htmx.logAll();
 
 htmx.on("htmx:beforeTransition", (e) => {
-	const { target } = e as { target: HTMLElement | null };
+	const evt = e as CustomEvent<{
+		readonly boosted: boolean;
+	}> & { target: HTMLElement };
+	const { target } = evt;
 	if (!target) return;
+	if (!evt.detail.boosted) return;
 
 	const viewTransitionItem = target.closest<HTMLElement>(
 		"[hx-view-transition-name]"

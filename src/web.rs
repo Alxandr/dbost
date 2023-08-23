@@ -290,6 +290,7 @@ impl HtmlContent for SeriesCard {
 				class="grid grid-cols-1 row-span-2 gap-0 overflow-hidden shadow-xl grid-rows-series-card rounded-box bg-base-100 series-card contain-paint"
 				// style=("view-transition-name: ", "series-", &*id, "-image", ";")
 				hx-view-transition-name="series-image"
+				hx-ext="transition"
 				{next_page_attr}
 			>
 				<a class="contents" href=("/series/", &*id)>
