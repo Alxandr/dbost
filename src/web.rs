@@ -10,12 +10,13 @@ use axum::{
 	routing::get,
 	Router,
 };
-use dbost_entities::{season, series, user};
+use dbost_entities::{season, series, theme_song, user};
 use dbost_htmx::extractors::HxRequestInfo;
 use dbost_session::Session;
+use indexmap::IndexMap;
 use rstml_component::{
-	write_html, For, HtmlAttributes, HtmlAttributesFormatter, HtmlComponent, HtmlContent,
-	HtmlFormatter,
+	write_html, For, HtmlAttributeValue, HtmlAttributes, HtmlAttributesFormatter, HtmlComponent,
+	HtmlContent, HtmlFormatter,
 };
 use rstml_component_axum::Html;
 use sea_orm::{
@@ -24,7 +25,7 @@ use sea_orm::{
 };
 use sea_query::JoinType;
 use serde::Deserialize;
-use std::{borrow::Cow, error, fmt, sync::Arc};
+use std::{borrow::Cow, error, fmt, iter::Fuse, sync::Arc};
 use thiserror::Error;
 use tracing::log::warn;
 use uuid::Uuid;
@@ -167,17 +168,17 @@ impl<'a> HtmlContent for NavBar<'a> {
 }
 
 #[derive(HtmlComponent)]
-struct Template<T, C>
+struct Template<'a, T, C>
 where
 	T: AsRef<str>,
 	C: HtmlContent,
 {
 	pub title: T,
 	pub children: C,
-	pub session: Session,
+	pub session: &'a Session,
 }
 
-impl<T, C> HtmlContent for Template<T, C>
+impl<'a, T, C> HtmlContent for Template<'a, T, C>
 where
 	T: AsRef<str>,
 	C: HtmlContent,
@@ -294,11 +295,11 @@ impl HtmlContent for SeriesCard {
 				{next_page_attr}
 			>
 				<a class="contents" href=("/series/", &*id)>
-					<figure
+					<picture
 						class="series-image rounded-box"
 					>
 						<img src=self.image.as_deref() alt="" referrerpolicy="no-referrer" />
-					</figure>
+					</picture>
 					<div class="p-4 text-base bg-base-100/80 series-text">
 						<h2 class="card-title text-ellipsis line-clamp-2" hx-disable>{&*self.name}</h2>
 						<p>"Seasons: " {self.season_count}</p>
@@ -366,7 +367,7 @@ async fn index(
 		},
 		_ => Ok(Html::from_fn(move |f| {
 			write_html!(f,
-				<Template title="Series" session=session>
+				<Template title="Series" session=&session>
 					<h1 class="mb-8 text-4xl font-bold">Series</h1>
 
 					<ul
@@ -380,6 +381,107 @@ async fn index(
 				</Template>
 			)
 		}).into_response())
+	}
+}
+
+// TODO: move
+struct Concat<I1, I2> {
+	iter1: Fuse<I1>,
+	iter2: Fuse<I2>,
+}
+
+impl<I1, I2> Concat<I1, I2>
+where
+	I1: Iterator,
+	I2: Iterator<Item = I1::Item>,
+{
+	pub fn new(iter1: I1, iter2: I2) -> Self {
+		Self {
+			iter1: iter1.fuse(),
+			iter2: iter2.fuse(),
+		}
+	}
+}
+
+impl<I1, I2> Iterator for Concat<I1, I2>
+where
+	I1: Iterator,
+	I2: Iterator<Item = I1::Item>,
+{
+	type Item = I1::Item;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		self.iter1.next().or_else(|| self.iter2.next())
+	}
+
+	fn size_hint(&self) -> (usize, Option<usize>) {
+		let (min1, max1) = self.iter1.size_hint();
+		let (min2, max2) = self.iter2.size_hint();
+
+		(
+			min1.saturating_add(min2),
+			max1.and_then(|max1| max2.map(|max2| max1.saturating_add(max2))),
+		)
+	}
+}
+
+#[derive(HtmlComponent)]
+struct VideoPlayer<'a> {
+	video: &'a theme_song::Model,
+}
+
+impl<'a> HtmlContent for VideoPlayer<'a> {
+	fn fmt(self, f: &mut HtmlFormatter) -> fmt::Result {
+		write_html!(f, { ("video: ", self.video.id.to_string()) })
+	}
+}
+
+#[derive(HtmlComponent)]
+struct ThemeDisplay<'a> {
+	video: Option<&'a theme_song::Model>,
+}
+
+impl<'a> HtmlContent for ThemeDisplay<'a> {
+	fn fmt(self, f: &mut HtmlFormatter) -> fmt::Result {
+		match self.video {
+			None => write_html!(f,
+				<div class="flex rounded-lg aspect-video bg-gradient-to-r from-sky-700/50 to-indigo-700/50">
+					<p class="self-center block m-auto fit-content">"Theme song missing"</p>
+				</div>
+			),
+			Some(theme) => VideoPlayer { video: theme }.fmt(f),
+		}
+	}
+}
+
+#[derive(HtmlComponent)]
+struct EditButton<Target, Action>
+where
+	Target: HtmlAttributeValue,
+	Action: HtmlAttributeValue,
+{
+	target: Target,
+	action: Action,
+	enabled: bool,
+}
+
+impl<Target, Action> HtmlContent for EditButton<Target, Action>
+where
+	Target: HtmlAttributeValue,
+	Action: HtmlAttributeValue,
+{
+	fn fmt(self, f: &mut HtmlFormatter) -> fmt::Result {
+		if !self.enabled {
+			return Ok(());
+		}
+
+		write_html!(f,
+			<button
+				class="invisible float-right btn btn-ghost btn-sm sm:visible"
+				hx-get=("/views/edit-theme-form?action=", self.action)
+				hx-target=self.target
+			>"edit"</button>
+		)
 	}
 }
 
@@ -400,28 +502,51 @@ async fn series(
 		.all(&db)
 		.await?;
 
+	let theme_ids = Concat::new(
+		series.theme_song_id.into_iter(),
+		seasons.iter().filter_map(|s| s.theme_song_id),
+	);
+
+	let themes = theme_song::Entity::find()
+		.filter(theme_song::Column::Id.is_in(theme_ids))
+		.all(&db)
+		.await?
+		.into_iter()
+		.map(|m| (m.id, m))
+		.collect::<IndexMap<_, _>>();
+
 	Ok(
 		Html::from_fn(move |f| {
 			let series_id = series.id.to_string();
 
 			write_html!(f,
-				<Template title=&*series.name session=session>
+				<Template title=&*series.name session=&session>
 					<div class="rounded-lg min-h-72 hero">
 						<div class="flex-col hero-content lg:flex-row">
-							<figure
-								class="flex-none w-full sm:w-96 contain-paint"
+							<picture
+								class="flex-none w-full lg:self-start sm:w-96 contain-paint"
 								style="view-transition-name: series-image;"
-								// hx-view-name=("series-", &*series_id, "-image")
 							>
 								<img
 									src=series.image.as_deref()
 									class="rounded-lg shadow-2xl"
 									referrerpolicy="no-referrer"
 									alt=(&*series.name, " thumbnail") />
-							</figure>
+							</picture>
 							<div class="flex-1">
 								<h1 class="text-5xl font-bold">{&*series.name}</h1>
 								<p class="py-6" hx-disable>{series.description.as_deref()}</p>
+
+								<div id=("theme-song-", &*series_id)>
+									<h3 class="flex text-xl font-bold">
+										<span class="flex-1">"Theme Song"</span>
+										<EditButton
+											target=("theme-song-", &*series_id)
+											action=("/series/", &*series_id, "/theme-song")
+											enabled={session.user().is_some()} />
+									</h3>
+									<ThemeDisplay video=series.theme_song_id.map(|id| &themes[&id]) />
+								</div>
 							</div>
 						</div>
 					</div>
@@ -437,7 +562,7 @@ async fn series(
 										id=(&*series_id, "/season/", &*season_id)
 										class="flex flex-col gap-4 p-4 rounded-lg sm:flex-row bg-base-200"
 									>
-										<figure
+										<picture
 											class="self-center flex-none w-full sm:self-start sm:w-56"
 										>
 											<img
@@ -445,7 +570,7 @@ async fn series(
 												class="mx-auto rounded-lg shadow-2xl"
 												referrerpolicy="no-referrer"
 												alt=(season_name, " thumbnail") />
-										</figure>
+										</picture>
 										<div class="flex-1">
 											<h2 class="text-3xl font-bold tooltip" data-tip=&*season_number_display>{season_name}</h2>
 											<p class="py-6" hx-disable>{s.description.as_deref()}</p>
