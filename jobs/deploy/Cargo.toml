@@ -13,7 +13,7 @@ aws-sdk-ecs = { version = "0.30.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
-aws-sdk-secretsmanager = { version = "0.29.0", default-features = false, features = [
+aws-sdk-secretsmanager = { version = "0.30.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
