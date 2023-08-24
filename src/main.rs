@@ -2,6 +2,7 @@ mod api;
 mod assets;
 mod auth;
 mod extractors;
+mod utils;
 mod web;
 
 #[cfg(feature = "dev")]
