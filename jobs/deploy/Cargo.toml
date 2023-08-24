@@ -9,7 +9,7 @@ aws-config = { version = "0.56.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
-aws-sdk-ecs = { version = "0.29.0", default-features = false, features = [
+aws-sdk-ecs = { version = "0.30.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
