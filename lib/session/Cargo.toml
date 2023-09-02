@@ -32,7 +32,7 @@ serde = { version = "1.0.188", default-features = false, features = [
 	"std",
 ] }
 sha2 = { version = "0.10.7", features = ["std"] }
-thiserror = "1.0.47"
+thiserror = "1.0.48"
 time = "0.3.28"
 tower-layer = "0.3.2"
 tower-service = "0.3.2"

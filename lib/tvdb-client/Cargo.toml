@@ -18,5 +18,5 @@ serde_json = { version = "1.0.105", default-features = false, features = [
 	"std",
 ] }
 task-local-extensions = "0.1.4"
-thiserror = "1.0.47"
+thiserror = "1.0.48"
 tracing = "0.1.37"
