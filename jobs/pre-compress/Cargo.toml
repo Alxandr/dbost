@@ -38,4 +38,4 @@ tracing-forest = { version = "0.1.6", default-features = false, features = [
 tracing-subscriber = { version = "0.3.17", default-features = false, features = [
 	"std",
 ] }
-walkdir = { version = "2.3.3", default-features = false }
+walkdir = { version = "2.4.0", default-features = false }
