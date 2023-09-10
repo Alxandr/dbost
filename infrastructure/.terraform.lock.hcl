@@ -2,24 +2,23 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/cyrilgdn/postgresql" {
-  version     = "1.20.0"
+  version     = "1.21.0"
   constraints = "~> 1.20"
   hashes = [
-    "h1:MMtr2K+jD4aaD98IEAr9OkEL3Zn+U7jICBW+J1Oqtz8=",
-    "zh:19c62675a98dfd535fc502a08819f4baee0d3367282b90ae07ccb09bb02d4c8b",
-    "zh:49bb53da13fe4f97d3735a977a833ddfc205bf05fcea6ce5de1978d99923d2b7",
-    "zh:65b423afa8eba3ea9cb3375f8f288ef9496d71cd4c9ba248b1ec55d2f8d6ad64",
-    "zh:841c0418ed751d33c5a98750bf72dc06bd53bdf1bb7c739a39995b7002aa4ea9",
-    "zh:87840476c5b8b04c3a8398c756ec96a7d63f6aa9e3f657fb45d79135aec0c7da",
-    "zh:98fe7973afe8a95f86428fd5a47f96df5f1984eac9907b4665a65190b7008f59",
-    "zh:a82759e5701b709cdc23eff81b850a2979b5fcedf22900cd10ca484d2ccda496",
-    "zh:ad3a9288149cf4f534baf4278bd9ca50e254373ecd151d870f2eba9aa184b441",
-    "zh:c938d8c959efaf63f38393a9ee9b9fe28e154523c5c25adececbed26b8f38043",
-    "zh:cf81079e67e457a201aafea9f4e8b96987549a15c0f0bb284680cca8f069a679",
-    "zh:dca79738c6a5cff0668b0f0fec5e7bceceadf6ad27b116c42907f1b942103d69",
-    "zh:e4922cbe888c949b1bfe8d459869cc3fd17c2957dcde265a30209ae25635a3c2",
-    "zh:e56c16a8dfb649f731e5cd41b8cc12ed970da76a0c6794c50bc70b89633f4d5b",
-    "zh:ec44eafdaf7433cf8f4ee366ca89bfca1dd3e18e23bfcf61d35e231377201a77",
+    "h1:+yM/8Y9UOWxWmPB6Vay2d48iQN6Acy+yLvX69TWiTfA=",
+    "h1:/42KipenHX1d5GRSL5Yc0b1ae9bsqJtK8cjdYU4S8aQ=",
+    "h1:0VVLzfpS8vDLpwXpe9xLPPOVdnNU9dIGOIo2+g+1KHY=",
+    "h1:6aDLfQNJxcpUdoQwa8k00VaNUCy8qQn1J8UsjuKY5Eo=",
+    "h1:AzhJMQPAfDPPPha3VLQjP7IY4IxuVliylWYU6+YeM0Q=",
+    "h1:Jiy9o0rCL6SIcYAkptqQfpYikMWSNG0q/cmleVrGT+I=",
+    "h1:MQ8w7Gc57osaawBU7F9usqsxyRKtsdL3w7xNkf3cO68=",
+    "h1:N1NCVYr19gN8rX3mhyHLOw2i0K8QoPvxamE9JslS84w=",
+    "h1:ZayuktPbMWpVASfwOYjkihJUsefh3tQJVdshb0PNfHM=",
+    "h1:i0ihJjt71AnT5Yh2h1kZA4su7uuyR2R92Z/zT/SI4H8=",
+    "h1:jJ4dGzTqeucAV1PDfuTLZ3lRZn1CKCWfNHS6/rTVmfo=",
+    "h1:v7X6z6j8Uo07+QJPuO3EVM8N1uy6t2k+1GiRGioOPGc=",
+    "h1:vJvoAXRXayNQvLrXXf2iWwadstr8TZtfIwtWg2fMLNo=",
+    "h1:yLrAmJujDYnlo4H+okLX4WVFxnZqCCDjleH/EU9oEWo=",
   ]
 }
 
