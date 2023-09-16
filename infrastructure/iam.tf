@@ -37,10 +37,6 @@ data "aws_iam_policy_document" "ecs_agent_read_secrets" {
       "secretsmanager:ListSecretVersionIds",
     ]
     resources = [
-      aws_secretsmanager_secret.web.arn,
-      aws_secretsmanager_secret.tvdb.arn,
-      aws_secretsmanager_secret.db_app.arn,
-      aws_secretsmanager_secret.db_migrator.arn,
     ]
     effect = "Allow"
   }
@@ -60,7 +56,6 @@ data "aws_iam_policy_document" "esc_agent_write_dlq_message" {
       "sqs:SendMessage",
     ]
     resources = [
-      aws_sqs_queue.dbost_db_schedule_dlq.arn,
     ]
     effect = "Allow"
   }
@@ -72,8 +67,6 @@ data "aws_iam_policy_document" "esc_agent_start_task" {
       "ecs:RunTask",
     ]
     resources = [
-      aws_ecs_cluster.cluster.arn,
-      data.aws_ecs_task_definition.dbost_db_cleaner.arn_without_revision,
     ]
     effect = "Allow"
   }
