@@ -64,7 +64,7 @@ tokio = { version = "1.32.0", features = [
 	"rt-multi-thread",
 	"signal",
 ] }
-tokio-util = { version = "0.7.8", default-features = false }
+tokio-util = { version = "0.7.9", default-features = false }
 tower = { version = "0.4.13", default-features = false }
 tower-http = { version = "0.4.4", features = [
 	"trace",
