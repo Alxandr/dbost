@@ -23,7 +23,7 @@ hmac = { version = "0.12.1", features = ["std"] }
 http = "0.2.9"
 pbkdf2 = "0.12.2"
 rand = { version = "0.8.5" }
-sea-orm = { version = "0.12.2", default-features = false, features = [
+sea-orm = { version = "0.12.3", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
