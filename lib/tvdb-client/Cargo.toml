@@ -8,7 +8,7 @@ edition = "2021"
 async-trait = "0.1.73"
 futures = { version = "0.3.28", default-features = false, features = ["std"] }
 itertools = "0.11.0"
-reqwest = { version = "0.11.20", default-features = false, features = [
+reqwest = { version = "0.11.21", default-features = false, features = [
 	"gzip",
 	"rustls-tls",
 ] }
