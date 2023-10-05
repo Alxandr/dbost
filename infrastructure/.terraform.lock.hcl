@@ -99,14 +99,14 @@ provider "registry.terraform.io/hashicorp/random" {
 }
 
 provider "registry.terraform.io/spacelift-io/spacelift" {
-  version     = "1.3.1"
+  version     = "1.4.0"
   constraints = "~> 1.1"
   hashes = [
-    "h1:9da/2ygmUiOUK1pw9krXepyc7Sd5te5LvPMnQfZSxOE=",
-    "h1:CqchczEmWusw46EaGSaLGCcfOzwOYywRrJeOmB+25lU=",
-    "h1:ThsRh3c8vkcLeYTYDm1hXnOZ0nNMJJH0f7+28WS3NI4=",
-    "h1:VTcveZtItjkkdkM7d6J9EZ+CzIEXD4+KTX/WM1max2k=",
-    "h1:qqcuX2VrgQk6LeLJYcdsK2YbKw0NPzVHwde+rg9qtgc=",
-    "h1:wustVI7edFpOuBrFjoM5TsQyNEDkA40cAuSsSBwbfCk=",
+    "h1:KoZApc0Nz/mFvM63XZSZ0X7XaZCS42kitfRdxBgsLhM=",
+    "h1:SfW5lA9GA1LCi4CUjqv6obdMjLI17eTZCoC8Ap5bCEI=",
+    "h1:dtLLgFSdbeUg2yT6bR4z5lhodnQw2kaAUjQwCy1pm9s=",
+    "h1:gVuEqnMYQ0VZzxiq285hdTiSqLgb9OT8UmCFBEDg37w=",
+    "h1:nrj/TF9NjJTwWxp+jwx8/GCnUjfg5xuuiSkLz1ywX1E=",
+    "h1:xJrlGgH+06dOEBy5XeBciIdyIzYz51Wa+36yfpoXQwU=",
   ]
 }
