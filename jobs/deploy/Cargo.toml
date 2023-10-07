@@ -9,11 +9,11 @@ aws-config = { version = "0.56.1", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
-aws-sdk-ecs = { version = "0.32.0", default-features = false, features = [
+aws-sdk-ecs = { version = "0.33.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
-aws-sdk-secretsmanager = { version = "0.32.0", default-features = false, features = [
+aws-sdk-secretsmanager = { version = "0.33.0", default-features = false, features = [
 	"rustls",
 	"rt-tokio",
 ] }
