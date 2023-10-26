@@ -14,7 +14,7 @@ cookie = { version = "0.17.0", default-features = false }
 dbost-entities = { version = "0.0.0", path = "../entities" }
 dbost-session = { version = "0.0.0", path = "../../lib/session" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
-futures = { version = "0.3.28", default-features = false, features = ["std"] }
+futures = { version = "0.3.29", default-features = false, features = ["std"] }
 http = "0.2.9"
 indexmap = "2.0.2"
 oauth2 = { version = "4.4.2", default-features = false }
