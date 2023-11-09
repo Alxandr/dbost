@@ -16,5 +16,5 @@ sea-orm-migration = { version = "0.12.4", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
-tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.34.0", features = ["macros", "rt-multi-thread"] }
 uuid = "1.5.0"
