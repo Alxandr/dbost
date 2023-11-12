@@ -9,7 +9,7 @@ name = "migration"
 path = "src/lib.rs"
 
 [dependencies]
-sea-orm-migration = { version = "0.12.4", default-features = false, features = [
+sea-orm-migration = { version = "0.12.5", default-features = false, features = [
 	"cli",
 	"sqlx-postgres",
 	"runtime-tokio-rustls",
