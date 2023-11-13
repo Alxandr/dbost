@@ -15,7 +15,7 @@ dbost-entities = { version = "0.0.0", path = "../entities" }
 dbost-session = { version = "0.0.0", path = "../../lib/session" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
 futures = { version = "0.3.29", default-features = false, features = ["std"] }
-http = "0.2.10"
+http = "0.2.11"
 indexmap = "2.1.0"
 oauth2 = { version = "4.4.2", default-features = false }
 openidconnect = { version = "3.4.0", default-features = false, features = [
