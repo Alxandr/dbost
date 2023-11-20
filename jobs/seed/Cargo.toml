@@ -42,4 +42,4 @@ tracing-subscriber = { version = "0.3.17", default-features = false, features = 
 ] }
 tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
 url = "2.4.1"
-uuid = { version = "1.5.0", features = ["serde"] }
+uuid = { version = "1.6.0", features = ["serde"] }
