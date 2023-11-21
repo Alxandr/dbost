@@ -50,7 +50,7 @@ sea-query = { version = "0.30.2", default-features = false, features = [
 	"with-uuid",
 	"backend-postgres",
 ] }
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }
 serde_json = { version = "1.0.108", default-features = false, features = [
 	"std",
 ] }
