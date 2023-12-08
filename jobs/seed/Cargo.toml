@@ -9,7 +9,7 @@ dbost-entities = { version = "0.0.0", path = "../../domain/entities" }
 dbost-services = { version = "0.0.0", path = "../../domain/services" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
 futures = { version = "0.3.29", default-features = false, features = ["std"] }
-sea-orm = { version = "0.12.8", default-features = false, features = [
+sea-orm = { version = "0.12.9", default-features = false, features = [
 	"sqlx-postgres",
 	"runtime-tokio-rustls",
 	"with-uuid",
