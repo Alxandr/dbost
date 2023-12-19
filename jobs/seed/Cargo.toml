@@ -22,7 +22,7 @@ sea-query = { version = "0.30.5", default-features = false, features = [
 	"backend-postgres",
 ] }
 time = { version = "0.3.31", default-features = false, features = ["std"] }
-tokio = { version = "1.35.0", features = [
+tokio = { version = "1.35.1", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal",
