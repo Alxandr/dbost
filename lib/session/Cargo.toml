@@ -27,7 +27,7 @@ sea-orm = { version = "0.12.10", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
-serde = { version = "1.0.194", default-features = false, features = [
+serde = { version = "1.0.195", default-features = false, features = [
 	"derive",
 	"std",
 ] }
