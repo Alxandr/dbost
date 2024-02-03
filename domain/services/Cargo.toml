@@ -29,7 +29,7 @@ serde = { version = "1.0.196", default-features = false, features = [
 ] }
 serde_json = "1.0.109"
 thiserror = { version = "1.0.51", default-features = false }
-time = "0.3.32"
+time = "0.3.33"
 tracing = { version = "0.1.37", default-features = false, features = ["std"] }
 tvdb-client = { version = "0.0.0", path = "../../lib/tvdb-client" }
 url = { version = "2.5.0", default-features = false }
