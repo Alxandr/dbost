@@ -9,4 +9,4 @@ sea-orm = { version = "0.12.12", default-features = false, features = [
 	"with-uuid",
 	"with-time",
 ] }
-time = "0.3.32"
+time = "0.3.33"
