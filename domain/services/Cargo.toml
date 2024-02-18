@@ -18,7 +18,7 @@ futures = { version = "0.3.30", default-features = false, features = ["std"] }
 http = "0.2.11"
 indexmap = "2.1.0"
 oauth2 = { version = "4.4.2", default-features = false }
-openidconnect = { version = "3.4.0", default-features = false, features = [
+openidconnect = { version = "3.5.0", default-features = false, features = [
 	"reqwest",
 ] }
 sea-orm = { version = "0.12.14", default-features = false }
