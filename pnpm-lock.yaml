@@ -14,8 +14,8 @@ devDependencies:
     specifier: ^3.2.2
     version: 3.2.4
   '@dagger.io/dagger':
-    specifier: ^0.9.0
-    version: 0.9.0
+    specifier: ^0.10.0
+    version: 0.10.0
   '@octokit/rest':
     specifier: ^20.0.1
     version: 20.0.1
@@ -227,8 +227,8 @@ packages:
       - encoding
     dev: true
 
-  /@dagger.io/dagger@0.9.0:
-    resolution: {integrity: sha512-yHvptUGSoCA2eYmgLYxj7GpkndY+NE/2Cw+zR+9s2LMDAhRNjVYwighUj1x7Zbb8mmLY7bnIjSHnF5xf4Uzo4w==}
+  /@dagger.io/dagger@0.10.0:
+    resolution: {integrity: sha512-vpFLhN0UawyoOY/Tna6oatvtfBTjuta5DPrFgeOAwT/tylIlCDb6mQRKAhRxXMsw2HkBP4RLqglCXQrNb13rvA==}
     engines: {node: '>=16'}
     dependencies:
       '@lifeomic/axios-fetch': 3.0.1
@@ -238,9 +238,11 @@ packages:
       graphql: 16.8.0
       graphql-request: 6.1.0(graphql@16.8.0)
       graphql-tag: 2.12.6(graphql@16.8.0)
-      node-color-log: 10.0.2
+      node-color-log: 11.0.2
       node-fetch: 3.3.2
+      reflect-metadata: 0.2.1
       tar: 6.1.15
+      typescript: 5.3.3
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -494,7 +496,7 @@ packages:
     resolution: {integrity: sha512-bwEgYXtGrn/F+yYqoUIAWBRzyqQ7yB1VL84gCq0uAk36GRoyoWyOzbE35VWeXlmkkoby91FnAwh4UhgayMM/og==}
     engines: {node: '>=12'}
     dependencies:
-      '@types/node-fetch': 2.6.4
+      '@types/node-fetch': 2.6.11
     dev: true
 
   /@nodelib/fs.scandir@2.1.5:
@@ -682,13 +684,6 @@ packages:
     dependencies:
       '@types/node': 20.5.1
       form-data: 4.0.0
-    dev: true
-
-  /@types/node-fetch@2.6.4:
-    resolution: {integrity: sha512-1ZX9fcN4Rvkvgv4E6PAY5WXUFWFcRWxZa3EW83UjycOB9ljJCedb2CupIP4RZMEwF/M3eTcCihbBRgwtGbg5Rg==}
-    dependencies:
-      '@types/node': 20.5.1
-      form-data: 3.0.1
     dev: true
 
   /@types/node@20.5.1:
@@ -893,7 +888,7 @@ packages:
   /cross-fetch@3.1.8:
     resolution: {integrity: sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg==}
     dependencies:
-      node-fetch: 2.6.13
+      node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -1225,15 +1220,6 @@ packages:
   /form-data@2.5.1:
     resolution: {integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==}
     engines: {node: '>= 0.12'}
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      mime-types: 2.1.35
-    dev: true
-
-  /form-data@3.0.1:
-    resolution: {integrity: sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==}
-    engines: {node: '>= 6'}
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
@@ -1603,25 +1589,13 @@ packages:
     hasBin: true
     dev: true
 
-  /node-color-log@10.0.2:
-    resolution: {integrity: sha512-mSIv0cguSaEo0kbHkcPs3bohnFPq0uTBqMjwFmlF6YGRPXUPmExorLNaUEinijLV3cokZNKWcX2ieZiKoHftSw==}
+  /node-color-log@11.0.2:
+    resolution: {integrity: sha512-+gD5pQpVpEkEA3He9STku4VL1EO9SaOW3HElumCd3xWorulnfr2053NCSVwPCXrkwI5ihPYucQxSCSOuS1q+Eg==}
     dev: true
 
   /node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
-    dev: true
-
-  /node-fetch@2.6.13:
-    resolution: {integrity: sha512-StxNAxh15zr77QvvkmveSQ8uCQ4+v5FkvNTj0OESmiHu+VRi/gXArXtkWMElOsOUNLtUEvI4yS+rdtOHZTwlQA==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-    dependencies:
-      whatwg-url: 5.0.0
     dev: true
 
   /node-fetch@2.7.0:
@@ -2168,6 +2142,10 @@ packages:
       picomatch: 2.3.1
     dev: true
 
+  /reflect-metadata@0.2.1:
+    resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
+    dev: true
+
   /require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -2420,6 +2398,12 @@ packages:
   /tunnel@0.0.6:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
     engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
+    dev: true
+
+  /typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
     dev: true
 
   /undici@5.28.3:
