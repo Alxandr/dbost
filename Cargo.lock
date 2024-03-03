@@ -180,9 +180,9 @@ checksum = "3b13c32d80ecc7ab747b80c3784bce54ee8a7a0cc4fbda9bf4cda2cf6fe90854"
 
 [[package]]
 name = "arc-swap"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
+checksum = "7b3d0060af21e8d11a926981cc00c6c1541aa91dd64b9f881985c3da1094425f"
 
 [[package]]
 name = "async-compression"
@@ -682,6 +682,12 @@ name = "base64"
 version = "0.21.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c79fed4cdb43e993fcdadc7e58a09fd0e3e649c4436fa11da71c9f1f3ee7feb9"
+
+[[package]]
+name = "base64"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51"
 
 [[package]]
 name = "base64-simd"
@@ -1244,7 +1250,7 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "axum",
- "base64 0.21.6",
+ "base64 0.22.0",
  "bincode",
  "cookie",
  "dbost-entities",
@@ -1273,7 +1279,7 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "axum",
- "base64 0.21.6",
+ "base64 0.22.0",
  "bincode",
  "cookie",
  "crypto-common",
