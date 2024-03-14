@@ -2883,9 +2883,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "204a2c509d17e31d6988b0f35d680e1655bd40fa3b39796cbd203505a4f5f36c"
+checksum = "c1122e68ae2878c9e9126149b4a7dac7facd9f41a92e471df117a77602ec8de1"
 dependencies = [
  "bytes",
  "rstml-component-macro",
