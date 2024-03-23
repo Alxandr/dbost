@@ -16,7 +16,7 @@ dbost-session = { version = "0.0.0", path = "../../lib/session" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
 http = "0.2.12"
-indexmap = "2.1.0"
+indexmap = "2.2.6"
 oauth2 = { version = "4.4.2", default-features = false }
 openidconnect = { version = "3.5.0", default-features = false, features = [
 	"reqwest",
