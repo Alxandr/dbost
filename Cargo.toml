@@ -36,7 +36,7 @@ futures-util = { version = "0.3.30", default-features = false }
 indexmap = { version = "2.1.0", default-features = false, features = ["std"] }
 md5 = "0.7.0"
 rstml-component = "0.2.1"
-rstml-component-axum = "0.2.4"
+rstml-component-axum = "0.2.6"
 sea-orm = { version = "0.12.15", default-features = false, features = [
 	"debug-print",
 	"macros",
