@@ -6,4 +6,4 @@ edition = "2021"
 
 [dependencies]
 sea-orm = { version = "0.12.15", default-features = false }
-time = { version = "0.3.34", default-features = false }
+time = { version = "0.3.35", default-features = false }
