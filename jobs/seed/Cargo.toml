@@ -21,7 +21,7 @@ sea-query = { version = "0.30.7", default-features = false, features = [
 	"with-uuid",
 	"backend-postgres",
 ] }
-time = { version = "0.3.35", default-features = false, features = ["std"] }
+time = { version = "0.3.36", default-features = false, features = ["std"] }
 tokio = { version = "1.37.0", features = [
 	"macros",
 	"rt-multi-thread",
