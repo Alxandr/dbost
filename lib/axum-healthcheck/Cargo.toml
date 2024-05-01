@@ -7,4 +7,4 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.20", features = ["json"] }
 indexmap = { version = "2.1.0", features = ["serde"] }
-serde = { version = "1.0.199", features = ["derive"] }
+serde = { version = "1.0.200", features = ["derive"] }
