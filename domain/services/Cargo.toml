@@ -10,7 +10,7 @@ async-trait = { version = "0.1.80", default-features = false }
 axum = { version = "0.6.20", default-features = false }
 base64 = { version = "0.22.1" }
 bincode = { version = "1.3.3", default-features = false }
-cookie = { version = "0.17.0", default-features = false }
+cookie = { version = "0.18.0", default-features = false }
 dbost-entities = { version = "0.0.0", path = "../entities" }
 dbost-session = { version = "0.0.0", path = "../../lib/session" }
 dbost-utils = { version = "0.0.0", path = "../../lib/utils" }
