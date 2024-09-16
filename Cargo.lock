@@ -1343,6 +1343,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "derive-where"
+version = "1.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62d671cc41a825ebabc75757b62d3d168c577f9149b2d49ece1dad1f72119d25"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.46",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2875,10 +2886,11 @@ dependencies = [
 
 [[package]]
 name = "rstml"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6522514806fbc2fc4c3d54ee9cc01e928fa00e1c988af4c730a64f57637ad7cf"
+checksum = "51187e564f12336ef40cd04f6f4d805d6919188001dcf1e0a021898ea0fe28ce"
 dependencies = [
+ "derive-where",
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
@@ -2889,9 +2901,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component"
-version = "0.2.1"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "204a2c509d17e31d6988b0f35d680e1655bd40fa3b39796cbd203505a4f5f36c"
+checksum = "02e8ec7e9dd40c5bb8fa022cfe673c5d8d5420c99a43cfc51a6280656681bf82"
 dependencies = [
  "bytes",
  "rstml-component-macro",
@@ -2909,9 +2921,9 @@ dependencies = [
 
 [[package]]
 name = "rstml-component-macro"
-version = "0.2.0"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20b5739c5b2f2fe461082c5dcc7ae95a332ffd247ec2be6cc08f81a5a7431c40"
+checksum = "462dfc711d18468acc5b93e5ad08202772c6cb49066caa3b40ae5666466eac31"
 dependencies = [
  "convert_case",
  "indexmap 2.1.0",
