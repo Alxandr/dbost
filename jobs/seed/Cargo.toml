@@ -16,7 +16,7 @@ sea-orm = { version = "0.12.15", default-features = false, features = [
 	"macros",
 	"debug-print",
 ] }
-sea-query = { version = "0.30.7", default-features = false, features = [
+sea-query = { version = "0.32.0", default-features = false, features = [
 	"with-time",
 	"with-uuid",
 	"backend-postgres",
