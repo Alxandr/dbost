@@ -30,7 +30,7 @@ jobs:
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.4
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@71c92474e7e4f5bca283fb17ef80fba9cdb2b4b1 # v6
         name: Install pnpm
         with:
           version: 8
