@@ -27,7 +27,7 @@ devDependencies:
     version: 5.0.5
   '@tailwindcss/typography':
     specifier: ^0.5.9
-    version: 0.5.12(tailwindcss@3.3.3)
+    version: 0.5.12(tailwindcss@4.2.2)
   '@types/node':
     specifier: ^20.5.1
     version: 20.5.1
@@ -47,8 +47,8 @@ devDependencies:
     specifier: ^10.1.0
     version: 10.1.0(postcss@8.4.27)
   tailwindcss:
-    specifier: ^3.3.3
-    version: 3.3.3
+    specifier: ^4.0.0
+    version: 4.2.2
   tsx:
     specifier: ^3.12.7
     version: 3.14.0
@@ -656,7 +656,7 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@tailwindcss/typography@0.5.12(tailwindcss@3.3.3):
+  /@tailwindcss/typography@0.5.12(tailwindcss@4.2.2):
     resolution: {integrity: sha512-CNwpBpconcP7ppxmuq3qvaCxiRWnbhANpY/ruH4L5qs2GCiVDJXde/pjj2HWPV1+Q4G9+V/etrwUYopdcjAlyg==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
@@ -665,7 +665,7 @@ packages:
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.3.3
+      tailwindcss: 4.2.2
     dev: true
 
   /@trysound/sax@0.2.0:
@@ -2362,6 +2362,10 @@ packages:
       sucrase: 3.34.0
     transitivePeerDependencies:
       - ts-node
+    dev: true
+
+  /tailwindcss@4.2.2:
+    resolution: {integrity: sha512-KWBIxs1Xb6NoLdMVqhbhgwZf2PGBpPEiwOqgI4pFIYbNTfBXiKYyWoTsXgBQ9WFg/OlhnvHaY+AEpW7wSmFo2Q==}
     dev: true
 
   /tar@6.1.15:
