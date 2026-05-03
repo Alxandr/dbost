@@ -21,7 +21,7 @@ digest = { version = "0.10.7", features = ["std"] }
 futures = { version = "0.3.30", default-features = false, features = ["std"] }
 hmac = { version = "0.12.1", features = ["std"] }
 http = "0.2.12"
-pbkdf2 = "0.12.2"
+pbkdf2 = "0.13.0"
 rand = { version = "0.8.5" }
 sea-orm = { version = "0.12.15", default-features = false, features = [
 	"with-uuid",
