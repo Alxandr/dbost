@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   htmx.org:
-    specifier: ^1.9.4
-    version: 1.9.11
+    specifier: ^2.0.0
+    version: 2.0.11
 
 devDependencies:
   '@actions/cache':
@@ -1392,8 +1392,8 @@ packages:
       function-bind: 1.1.1
     dev: true
 
-  /htmx.org@1.9.11:
-    resolution: {integrity: sha512-WlVuICn8dfNOOgYmdYzYG8zSnP3++AdHkMHooQAzGZObWpVXYathpz/I37ycF4zikR6YduzfCvEcxk20JkIUsw==}
+  /htmx.org@2.0.11:
+    resolution: {integrity: sha512-Thx/WtpeOQqSrqBCw/A1cwGJGg4UrVa3+sW0GmrM3p4gJgO89ecH4qtbnyzDDWFvBTqjnIMCgELTNt636dtamA==}
     dev: false
 
   /human-signals@5.0.0:
